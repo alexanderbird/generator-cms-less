@@ -1,11 +1,15 @@
 # CmsLess
-_Use less CMS on your static web site_
+_the Content Management System that gets out of your way_
 
-...a lightweight JavaScript + Ajax "Content Management System" for times when WordPress is way overkill, but you don't want to copy+paste your header, nav, etc. onto every page of your site. 
+* ultra-lightweight 
+* dynamically load pages based on url hash
+* great for "static" web sites when WordPress is overkill. 
 
-1. [Install](#Install)
-2. [Quick Start](#QuickStart)
+---
+
+1. [Quick Start](#QuickStart)
 2. [More Details](#MoreDetails)
+3. [Install](#Install)
 
 # <a name="QuickStart"></a>Quick Start
 _index.html:_
