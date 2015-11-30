@@ -3,13 +3,22 @@ var CmsLess = ( function($) {
   var config = { 
     contentPath: 'cms-less-content',
     destinationSelector: '#cms-less-destination',
-    anchorDelimiter: '-'
+    anchorDelimiter: '-', 
+    notFoundPageName: '404'
   }
 
   function loadContent(pageName) {
-    $(config.destinationSelector).load(config.contentPath + "/" + pageName + ".html")
+    $(config.destinationSelector).load(expandedContentPath(pageName), function(response, status) {
+      if(status == 'error') {
+        $(config.destinationSelector).load(expandedContentPath(config.notFoundPageName));
+      }
+    });
   }
 
+  function expandedContentPath(pageName) {
+    return config.contentPath + "/" + pageName + ".html";
+  }
+  
   function loadContentFromHash() {
     var pageName = extractPageNameFromHash() || 'index';
 
@@ -33,7 +42,8 @@ var CmsLess = ( function($) {
   }
   
   return {
-    Init : Init
+    Init : Init,
+    PageName : extractPageNameFromHash
   };
   
 } )( jQuery );
