@@ -13,19 +13,29 @@ The goal is to keep your static HTML site [DRY](https://en.wikipedia.org/wiki/Do
 ## 1. Clone into your project
     cd js/lib
     git submodule add https://github.com/alexanderbird/cms-less.git
+    mkdir cms-less-content
+    cp js/lib/cms-less/404.html cms-less-content
     
 ## 2. Add to index.html
 
+    <div id="cms-less-destination"></div>
     <script src="js/lib/cms-less/cms-less.js"></script>
     <script type="text/javascript">
       $(function() {
         CmsLess.Init({
-          contentPath: 'html'
+          contentPath: 'custom/content/path'
         });
       });
     </script>
 
 * make sure you use the correct `src`path to cms-less.js in place of `js/lib/cms-less/cms-less.js`
+* if you don't want to use `cms-less-destination`, set a different `destinationSelector` - see Configuration notes
+
+## 3. JQuery? 
+If you're not using jQuery 2.x on your project, add it
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    
 
 ## Configuration
 The following options can be configured by passing an associative array to the Init method, as shown above.
@@ -63,6 +73,8 @@ If you are not running a web server locally while developing, you may benefit fr
 
 ### Setup with apache
 Add the following to your .htaccess file: 
+
+    RewriteEngine on
 
     # Ignore everything in sub-directories - necessary so assets, etc. can still be loaded
     RewriteCond %{REQUEST_URI}    ^/([^/]+)/.*$  [NC]
