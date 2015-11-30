@@ -43,3 +43,10 @@ Anything after the `anchorDelimiter` in the hash is ignored when loading the pag
 Because the default `anchorDelimiter` value is being used in this example, the pagename.html file will be loaded. 
 
 If the `anchorDelimiter` value was set to, say, 'rna', then pagename-ancho.html would be loaded. 
+
+## Developing with CmsLess
+### Not working - Cross origin requests not supported
+If you are not running a web server locally while developing your web site, you may benefit from [this Stack Overflow question](http://stackoverflow.com/questions/20041656/xmlhttprequest-cannot-load-file-cross-origin-requests-are-only-supported-for-ht). In short, Chrome doesn't allow Cross Origin Requests for local files. So, 
+
+* test in Firefox only, OR
+* run a web server locally (WAMP/MAMP/LAMP)
