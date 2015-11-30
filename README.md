@@ -41,6 +41,7 @@ _index.html:_
 * individual pages:
 	* accessed from: `example.com/#pagename`
 	* content stored in: `cms-less-content/pagename.html`
+* See [demo site](https://github.com/alexanderbird/cms-less-demo) (it's not live anywhere yet...)
    	
 # <a name="MoreDetails"></a>More Details
 ## What Goes Where
