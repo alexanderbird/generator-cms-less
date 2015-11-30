@@ -3,7 +3,8 @@ _the Content Management System that gets out of your way_
 
 * ultra-lightweight 
 * dynamically load pages based on url hash
-* great for "static" web sites when WordPress is overkill. 
+* keep static web sites [DRY](http://programmer.97things.oreilly.com/wiki/index.php/Don't_Repeat_Yourself)
+* because WordPress is a great hammer but not every website is a nail
 
 ---
 
