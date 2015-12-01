@@ -2,9 +2,14 @@
 _the Content Management System that gets out of your way_
 
 * ultra-lightweight 
-* dynamically load pages based on url hash
+* dynamically load page content based on url hash
 * keep static web sites [DRY](http://programmer.97things.oreilly.com/wiki/index.php/Don't_Repeat_Yourself)
 * because WordPress is a great hammer but not every website is a nail
+* implements Google's [hash bang notation](https://developers.google.com/webmasters/ajax-crawling/docs/learn-more) so SEO is not compromised
+
+### Requires
+* JQuery 2.X on the client side
+* In production only: PHP to render html snapshots for Google
 
 ---
 
@@ -88,6 +93,34 @@ If you're trying to get Chrome to work, you should note that me and [this guy on
 
 I prefer the local server option, and I like to know that if I have to check something quickly without starting up the server, I can always use Firefox. 
 
+## SEO
+**Yes,** SEO is not compromised by using the hash for navigation. You may benefit from [this brief blog post](https://www.oho.com/blog/explained-60-seconds-hash-symbols-urls-and-seo) or [Google's overview](https://developers.google.com/webmasters/ajax-crawling/docs/learn-more) of how to make AJAX applications crawlable. 
+
+###In short:
+* There is a PHP backend does nothing if you're not a robot
+* If you're a robot it generates pages on the server side instead of the client side
+	* It follows the same rules as the JavaScript front end
+
+### During development
+* You can ignore the PHP back end 
+	* it does not display any content that the front end does not
+	* it only displays the content for a different url scheme
+
+### In production
+Check that your site is doing what it should: 
+
+|URL|Content |
+|---|--------|
+| yourdomain.com/?_escaped_fragment_= | index page |
+| yourdomain.com/?_escaped_fragment_=somepage | somepage page |
+| etc. | |
+
+It should follow [Google's specs](https://developers.google.com/webmasters/ajax-crawling/docs/specification) out of the box - but you'll probably want to check that as a matter of course. 
+
+
+## Read More
+* [Someone's helpful blog post](https://blog.andyet.com/2015/05/18/lazymorphic-apps-bringing-back-static-web/) describing an AJAX approach to simple websites, with lots of discussion about pros, cons, and alternatives
+
 ---
 
 # <a name="Install"></a>Install
@@ -139,7 +172,7 @@ If the content load fails, then the notFoundPageName content is loaded. (See als
 * more robust - someone who types in yourdomain.com/path is automatically redirected to yourdomain.com#path
 * you can use the built-in CmsLess 404 page for `/invalid-path`
 
-### Setup with apache
+### Setup url rewriting with apache
 Add the following to your .htaccess file: 
 
     RewriteEngine on
@@ -151,6 +184,8 @@ Add the following to your .htaccess file:
     # redirect /path to /#path
     RewriteCond %{REQUEST_URI}    ^/([^/]+)      [NC]
     RewriteRule (.*)              /#%1           [R,NE,L]
+    
+    
     
 
     
