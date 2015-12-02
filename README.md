@@ -8,8 +8,9 @@ _the Content Management System that gets out of your way_
 * implements Google's [hash bang notation](https://developers.google.com/webmasters/ajax-crawling/docs/learn-more) so SEO is not compromised
 
 ### Requires
-* JQuery 2.X on the client side
-* In production only: PHP to render html snapshots for Google
+* JQuery 2.X 
+* PHP (optional, for [SEO hash-bang support](#seo))
+* Apache with mod_rewrite enabled (optional, for [SEO hash-bang support](#seo))
 
 ---
 
@@ -25,6 +26,7 @@ _index.html:_
         <!-- USING CmsLess: -->
         <h1>Site Header</h1>
         <p>And other content that belongs on every page</p>
+        <a href="#!one-page">One Page</a>
         <div id="cms-less-destination">
         	<!-- will be populated from cms-less-content/pagename.html -->
         	<!-- 	where the pagename is the hash up to the last hyphen -->
@@ -49,7 +51,7 @@ _index.html:_
 	* `index.html` contains all the content common to all pages (header, nav, library includes)
 	* `cms-less-content/index.html` contains the content to be shown for both example.com/#index and example.com/
 * individual pages:
-	* accessed from: `example.com/#pagename`
+	* accessed from: `example.com/#!pagename`
 	* content stored in: `cms-less-content/pagename.html`
 * Note: this repo is set up to be added to an existing project by cloning into `js/lib`. If you're making a new site from scratch and want boilerplate with CmsLess, See [the CmsLess boilerplate site](https://github.com/alexanderbird/cms-less-boilerplate) which can be forked as the initial commit of your new site. 
    	
@@ -66,20 +68,18 @@ _index.html:_
 	* **will be shown for example.com/#foobar**
 * `cms-less-content/404.html `
 	* will be shown when a page cannot be found (example.com/#missing)
-		* note that if [url rewriting](#UrlRewriting) has been enabled, then example.com/missing will become example.com/#missing, and so the same 404 page will be shown
-		* without url rewriting enabled, example.com/missing will show the web server's 404 page
 
 ## <a name="Anchors"></a>About Anchors
 **Yes**, this works with page anchors. 
 
-Anything after the `anchorDelimiter` (default: `-`) in the url hash is ignored when loading the page content. This way, you can still use the hash for page anchors. The only nuisance is that the anchor must now be `<a href='#pagename-anchorname'>Anchor Name</a>` to link to `<div id='pagename-anchorname'>Anchored Stuff</div>`. 
+Anything after the `anchorDelimiter` (default: `-`) in the url hash is ignored when loading the page content. This way, you can still use the hash for page anchors. The only nuisance is that the anchor must now be `<a href='#!pagename-anchorname'>Anchor Name</a>` to link to `<div id='pagename-anchorname'>Anchored Stuff</div>`. 
 
 To reiterate, all of the following will load `cms-less-content/foo.html`:
 
-* `example.com/#foo`
-* `example.com/#foo-`
-* `example.com/#foo-bar`
-* `example.com/#foo-baz`
+* `example.com/#!foo`
+* `example.com/#!foo-`
+* `example.com/#!foo-bar`
+* `example.com/#!foo-baz`
 
 You can test this out by [installing CmsLess](#Install) on your web site and browsing to the index page. From your web browser's JavaScript console, run `CmsLess.PageName('#somepage-totest')` to see what page name CmsLess extracts from the hash. If you don't provide an argument, it will take the hash from the `window.location.hash` property. 
 
@@ -118,8 +118,8 @@ If you're trying to get Chrome to work, you should note that me and [this guy on
 
 I prefer the local server option, and I like to know that if I have to check something quickly without starting up the server, I can always use Firefox. 
 
-## SEO
-**Yes,** SEO is not compromised by using the hash for navigation. You may benefit from [this brief blog post](https://www.oho.com/blog/explained-60-seconds-hash-symbols-urls-and-seo) or [Google's overview](https://developers.google.com/webmasters/ajax-crawling/docs/learn-more) of how to make AJAX applications crawlable. 
+## <a name='seo'></a>SEO
+**Yes,** SEO is not compromised by using the hash for navigation. Google crawlers see our hash-bang links (`<a href='#!pagename'>`) and index `?_escaped_fragment_=pagename` in stead of `#!pagename`. In search results, you see `#!pagename` - [which is something relatively new for Google to support](https://developers.google.com/webmasters/ajax-crawling/docs/learn-more) of how to make AJAX applications crawlable. 
 
 ###In short:
 * There is a PHP backend does nothing if you're not a robot
@@ -138,9 +138,9 @@ Check that your site is doing what it should:
 |---|--------|
 | yourdomain.com/?_escaped_fragment_= | index page |
 | yourdomain.com/?_escaped_fragment_=somepage | somepage page |
-| etc. | |
+| yourdomain.com/?_escaped_fragment_=missing_page | 404 |
 
-It should follow [Google's specs](https://developers.google.com/webmasters/ajax-crawling/docs/specification) out of the box - but you'll probably want to check that as a matter of course. 
+As per [Google's specs](https://developers.google.com/webmasters/ajax-crawling/docs/specification). 
 
 
 ## Read More
@@ -149,13 +149,19 @@ It should follow [Google's specs](https://developers.google.com/webmasters/ajax-
 ---
 
 # <a name="Install"></a>Install
-## 1. Clone into your project
+1. [Clone](#clone)
+2. [Call from index.html](#addToIndex)
+3. [Check dependancies](#checkDependancies)
+4. [Move a few files around](#moveOrSoftlink)
+5. [Configure](#Configuration) (optional)
+
+## <a name="clone"></a>1. Clone into your project
     cd js/lib
     git submodule add https://github.com/alexanderbird/cms-less.git
     mkdir cms-less-content
     cp js/lib/cms-less/404.html cms-less-content
     
-## 2. Add to index.html
+## <a name="addToIndex"></a>2. Add to index.html
 
     <div id="cms-less-destination"></div>
     <script src="js/lib/cms-less/cms-less.js"></script>
@@ -172,6 +178,15 @@ It should follow [Google's specs](https://developers.google.com/webmasters/ajax-
 CmsLess relies on JQuery 2.x. 
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    
+## <a name="moveOrSoftlink"></a>4. Move/Softlink Files
+In short, everything in the [`move-elsewhere`](move-elsewhere) folder belongs elsewhere. You can move it directly to where it belongs, or create a symbolic link (`ln -s original/file target/file`) so you don't have to move it again if you update CmsLess. 
+
+|file|where it belongs|purpose|
+|----|----------------|-------|
+|.htaccess|project root|<ul><li>redirects /path to /#!path </li><li>redirects the Google bot to crawlers.php for seo</li></ul> |
+|crawlers.php|content folder|Does the same as the AJAX, but server side for the Google bot using the url parameter instead of the hash|
+|404.html|content folder|Displays when an invalid page is accessed.|
     
 
 ## <a name="Configuration"></a>Configuration
@@ -190,23 +205,7 @@ The following options can be configured by passing an associative array to the I
 ## <a name="PageNotFound"></a>Page Not Found
 If the content load fails, then the notFoundPageName content is loaded. (See also: [Usage](#Usage).) A sample 404 page is provided with cms-less: to use it, copy it to your contentPath folder. 
 
-## <a name="UrlRewriting"></a>Redirecting `/path` to `/#path`
-### Advantages
-* more robust - someone who types in yourdomain.com/path is automatically redirected to yourdomain.com#path
-* you can use the built-in CmsLess 404 page for `/invalid-path`
 
-### Setup url rewriting with apache
-Add the following to your .htaccess file: 
-
-    RewriteEngine on
-
-    # Ignore everything in sub-directories - necessary so assets, etc. can still be loaded
-    RewriteCond %{REQUEST_URI}    ^/([^/]+)/.*$  [NC]
-    RewriteRule .*                -              [L]
-
-    # redirect /path to /#path
-    RewriteCond %{REQUEST_URI}    ^/([^/]+)      [NC]
-    RewriteRule (.*)              /#%1           [R,NE,L]
     
 Note: with this configured, CmsLess does't serve anything from the root directory other than index.html
     
