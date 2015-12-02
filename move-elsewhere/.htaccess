@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# For assets and page content at /path/subdirectory, do nothing
+RewriteCond %{REQUEST_URI}    ^/sample-site\.com/([^/]+)/.*$                  [NC]
+RewriteRule .*                -                                               [L]
+
+# For Google's crawlers, use crawlers.php instead of index.html
+RewriteCond %{QUERY_STRING}   ^(?:.*=.*&)*_escaped_fragment_=([^&]*)$         [NC]
+RewriteRule .*                /sample-site.com/content/crawlers.php?_escaped_fragment_=%1    [L]
+
+# Do redirect /path to /#path
+RewriteCond %{REQUEST_URI}    ^/sample-site\.com/([^/]+)                      [NC]
+RewriteRule .*                /sample-site.com/#!%1                           [R,NE,L]
+
