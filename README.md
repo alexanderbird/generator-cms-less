@@ -46,7 +46,7 @@ _index.html:_
 * individual pages:
 	* accessed from: `example.com/#pagename`
 	* content stored in: `cms-less-content/pagename.html`
-* See [demo site](https://github.com/alexanderbird/cms-less-demo) (it's not live anywhere yet...)
+* Note: this repo is set up to be added to an existing project by cloning into `js/lib`. If you're making a new site from scratch and want boilerplate with CmsLess, See [the CmsLess boilerplate site](https://github.com/alexanderbird/cms-less-boilerplate) which can be forked as the initial commit of your new site. 
    	
 # <a name="MoreDetails"></a>More Details
 ## What Goes Where
