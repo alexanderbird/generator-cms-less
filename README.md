@@ -152,5 +152,6 @@ Add the following to your .htaccess file:
     RewriteCond %{REQUEST_URI}    ^/([^/]+)      [NC]
     RewriteRule (.*)              /#%1           [R,NE,L]
     
+Note: with this configured, CmsLess does't serve anything from the root directory other than index.html
 
     
