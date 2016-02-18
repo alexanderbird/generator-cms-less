@@ -3,8 +3,8 @@ error_reporting(E_ALL);
 ini_set('display_errors', 'On'); // or ini_set('display_errors', 1);
 
 $requestedPageName = 'index';
-if(isset($_GET['_escaped_fragment_'])) {
-  $requestedPageName = $_GET['_escaped_fragment_'];
+if(isset($_GET['p'])) {
+  $requestedPageName = $_GET['p'];
   $requestedPageName = $requestedPageName == '' ? 'index' : $requestedPageName;
 }
 

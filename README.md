@@ -53,7 +53,7 @@ _index.html:_
 * individual pages:
 	* accessed from: `example.com/#!pagename`
 	* content stored in: `cms-less-content/pagename.html`
-* See [demo site](https://github.com/alexanderbird/cms-less-demo) (it's not live anywhere yet...)
+* Note: this repo is set up to be added to an existing project by cloning into `js/lib`. If you're making a new site from scratch and want boilerplate with CmsLess, See [the CmsLess boilerplate site](https://github.com/alexanderbird/cms-less-boilerplate) which can be forked as the initial commit of your new site. 
    	
 # <a name="MoreDetails"></a>More Details
 ## What Goes Where
@@ -83,6 +83,31 @@ To reiterate, all of the following will load `cms-less-content/foo.html`:
 
 You can test this out by [installing CmsLess](#Install) on your web site and browsing to the index page. From your web browser's JavaScript console, run `CmsLess.PageName('#somepage-totest')` to see what page name CmsLess extracts from the hash. If you don't provide an argument, it will take the hash from the `window.location.hash` property. 
 
+## Updating UI on page change
+CmsLess dispatches the `cms-less-page-change` event when the new page has loaded. 
+
+    $(document).bind('cms-less-page-change', function(e) {
+        console.log("The current page is " + e.originalEvent.detail.pageName);
+    });
+    
+ Note: currently this event is not dispatched for the first page load if there is no url hash. It's a bug, and I really can't figure out what's causing it. I welcome pull requests or feedback :)
+    
+## Avoiding the footer [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) (Flash Of Unstyled Content)
+Or rather, "Flash of Empty Page Before Content Loads" - if you have any footer or anything, you'll see it at the top of the screen before the page content pushes it down to the bottom. It's jarring. Avoid this by adding: 
+
+To /index.html
+
+    <span id='cms-less-content-placeholder'/>
+ 
+To stylesheet
+
+    #cms-less-content-placeholder {
+      display: block;
+      height: 100vh;
+    }
+    
+Before the first page is loaded the placeholder pushes the footer off the screen. When the first page is loaded, it replaces the placeholder span. 
+
 ## Without a web server
 **Sort-of**. [Some browsers protect from cross origin requests](http://stackoverflow.com/questions/20041656/xmlhttprequest-cannot-load-file-cross-origin-requests-are-only-supported-for-ht) when you're viewing the file direct from your local machine. This means that when CmsLess tries to load page content, the browser blocks the request (there's an error message shown in the developer console, and nothing shown on the web page).
 
@@ -94,7 +119,11 @@ If you're trying to get Chrome to work, you should note that me and [this guy on
 I prefer the local server option, and I like to know that if I have to check something quickly without starting up the server, I can always use Firefox. 
 
 ## <a name='seo'></a>SEO
-**Yes,** SEO is not compromised by using the hash for navigation. Google crawlers see our hash-bang links (`<a href='#!pagename'>`) and index `?_escaped_fragment_=pagename` in stead of `#!pagename`. In search results, you see `#!pagename` - [which is something relatively new for Google to support](https://developers.google.com/webmasters/ajax-crawling/docs/learn-more) of how to make AJAX applications crawlable. 
+**Yes,** CmsLess won't trash your SEO, if you do the following: 
+
+1. Link to `href=?p=pagename`
+2. In your `a` element, add `data-cms-less-path="pagename"`
+  - CmsLess will convert your links from `?p=` to `#` when it is initialized -- and will leave your links in the `?p=` if JavaScript is not enabled
 
 ###In short:
 * There is a PHP backend does nothing if you're not a robot
@@ -111,14 +140,12 @@ Check that your site is doing what it should:
 
 |URL|Content |
 |---|--------|
-| yourdomain.com/?_escaped_fragment_= | index page |
-| yourdomain.com/?_escaped_fragment_=somepage | somepage page |
-| yourdomain.com/?_escaped_fragment_=missing_page | 404 |
-
-As per [Google's specs](https://developers.google.com/webmasters/ajax-crawling/docs/specification). 
+| yourdomain.com/?p= | index page |
+| yourdomain.com/?p=somepage | somepage page |
+| yourdomain.com/?p=missing_page | 404 |
 
 
-## Read More
+## Read More about the Ajax Website Approach
 * [Someone's helpful blog post](https://blog.andyet.com/2015/05/18/lazymorphic-apps-bringing-back-static-web/) describing an AJAX approach to simple websites, with lots of discussion about pros, cons, and alternatives
 
 ---
@@ -142,17 +169,15 @@ As per [Google's specs](https://developers.google.com/webmasters/ajax-crawling/d
     <script src="js/lib/cms-less/cms-less.js"></script>
     <script type="text/javascript">
       $(function() {
-        CmsLess.Init({
-          contentPath: 'custom/content/path'
-        });
+        CmsLess.Init();
       });
     </script>
 
 * make sure you use the correct `src`path to cms-less.js in place of `js/lib/cms-less/cms-less.js`
-* if you don't want to use `cms-less-destination`, set a different `destinationSelector` - see Configuration notes
+* if you don't want to use `cms-less-destination`, set a different `destinationSelector` in the Init() configuration - see Configuration notes
 
-## <a name="checkDependancies"></a>3. Dependancies (JQuery)
-CmsLess relies on JQuery. If you're not using jQuery 2.x on your project, add it
+## 3. Dependancies (JQuery)
+CmsLess relies on JQuery 2.x. 
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     
@@ -161,10 +186,10 @@ In short, everything in the [`move-elsewhere`](move-elsewhere) folder belongs el
 
 |file|where it belongs|purpose|
 |----|----------------|-------|
-|.htaccess|project root|<ul><li>redirects /path to /#!path </li><li>redirects the Google bot to crawlers.php for seo</li></ul> |
-|crawlers.php|content folder|Does the same as the AJAX, but server side for the Google bot using the url parameter instead of the hash|
 |404.html|content folder|Displays when an invalid page is accessed.|
-    
+|.htaccess|project root|<ul><li>redirects /path to /#path </li><li>redirects the Google bot to crawlers.php for seo</li></ul> |
+|crawlers.php|content folder|Does the same as the AJAX, but server side for the Google bot using the url parameter instead of the hash|
+|crawler-helpers/|content folder|php utilities used by crawlers.php|
 
 ## <a name="Configuration"></a>Configuration
 The following options can be configured by passing an associative array to the Init method, as shown above.
@@ -182,8 +207,7 @@ The following options can be configured by passing an associative array to the I
 ## <a name="PageNotFound"></a>Page Not Found
 If the content load fails, then the notFoundPageName content is loaded. (See also: [Usage](#Usage).) A sample 404 page is provided with cms-less: to use it, copy it to your contentPath folder. 
 
-
-    
+Note: with this configured, CmsLess does't serve anything from the root directory other than index.html
     
     
 
