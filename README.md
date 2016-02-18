@@ -84,6 +84,24 @@ CmsLess dispatches the `cms-less-page-change` event when the new page has loaded
     $(document).bind('cms-less-page-change', function(e) {
         console.log("The current page is " + e.originalEvent.detail.pageName);
     });
+    
+ Note: currently this event is not dispatched for the first page load if there is no url hash. It's a bug, and I really can't figure out what's causing it. I welcome pull requests or feedback :)
+    
+## Avoiding the footer [FOUC](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) (Flash Of Unstyled Content)
+Or rather, "Flash of Empty Page Before Content Loads" - if you have any footer or anything, you'll see it at the top of the screen before the page content pushes it down to the bottom. It's jarring. Avoid this by adding: 
+
+To /index.html
+
+    <span id='cms-less-content-placeholder'/>
+ 
+To stylesheet
+
+    #cms-less-content-placeholder {
+      display: block;
+      height: 100vh;
+    }
+    
+Before the first page is loaded the placeholder pushes the footer off the screen. When the first page is loaded, it replaces the placeholder span. 
 
 ## Without a web server
 **Sort-of**. [Some browsers protect from cross origin requests](http://stackoverflow.com/questions/20041656/xmlhttprequest-cannot-load-file-cross-origin-requests-are-only-supported-for-ht) when you're viewing the file direct from your local machine. This means that when CmsLess tries to load page content, the browser blocks the request (there's an error message shown in the developer console, and nothing shown on the web page).
