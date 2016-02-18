@@ -45,9 +45,9 @@ var CmsLess = ( function($) {
     hash = hash || window.location.hash
     delimiterIndex = hash.lastIndexOf(config.anchorDelimiter);
     if(delimiterIndex > 0) {
-      return hash.slice(2, delimiterIndex);
+      return hash.slice(1, delimiterIndex);
     } else {
-      return hash.slice(2);
+      return hash.slice(1);
     }
   }
   
@@ -55,6 +55,10 @@ var CmsLess = ( function($) {
     config = $.extend(config, options);
     loadContentFromHash();
     $(window).bind('hashchange', loadContentFromHash);
+    $("a[data-cms-less-path]").each(function() {
+      var link = $(this);
+      link.attr("href", "#" + link.attr("data-cms-less-path"));
+    });
   }
   
   return {

@@ -119,7 +119,12 @@ If you're trying to get Chrome to work, you should note that me and [this guy on
 I prefer the local server option, and I like to know that if I have to check something quickly without starting up the server, I can always use Firefox. 
 
 ## <a name='seo'></a>SEO
-**Yes,** SEO is not compromised by using the hash for navigation. Google crawlers see our hash-bang links (`<a href='#!pagename'>`) and index `?_escaped_fragment_=pagename` in stead of `#!pagename`. In search results, you see `#!pagename` - [which is something relatively new for Google to support](https://developers.google.com/webmasters/ajax-crawling/docs/learn-more) of how to make AJAX applications crawlable. 
+**Yes,** CmsLess won't trash your SEO, if you do the following: 
+
+1. Link to `href=?p=pagename`
+2. In your `a` element, add `data-cms-less-path="pagename"`
+  - CmsLess will convert your links from `?p=` to `#` when it is initialized -- and will leave your links in the `?p=` if JavaScript is not enabled
+
 
 ###In short:
 * There is a PHP backend does nothing if you're not a robot
@@ -136,14 +141,12 @@ Check that your site is doing what it should:
 
 |URL|Content |
 |---|--------|
-| yourdomain.com/?_escaped_fragment_= | index page |
-| yourdomain.com/?_escaped_fragment_=somepage | somepage page |
-| yourdomain.com/?_escaped_fragment_=missing_page | 404 |
-
-As per [Google's specs](https://developers.google.com/webmasters/ajax-crawling/docs/specification). 
+| yourdomain.com/?p= | index page |
+| yourdomain.com/?p=somepage | somepage page |
+| yourdomain.com/?p=missing_page | 404 |
 
 
-## Read More
+## Read More about the Ajax Website Approach
 * [Someone's helpful blog post](https://blog.andyet.com/2015/05/18/lazymorphic-apps-bringing-back-static-web/) describing an AJAX approach to simple websites, with lots of discussion about pros, cons, and alternatives
 
 ---
@@ -184,9 +187,11 @@ In short, everything in the [`move-elsewhere`](move-elsewhere) folder belongs el
 
 |file|where it belongs|purpose|
 |----|----------------|-------|
-|.htaccess|project root|<ul><li>redirects /path to /#!path </li><li>redirects the Google bot to crawlers.php for seo</li></ul> |
-|crawlers.php|content folder|Does the same as the AJAX, but server side for the Google bot using the url parameter instead of the hash|
 |404.html|content folder|Displays when an invalid page is accessed.|
+|.htaccess|project root|<ul><li>redirects /path to /#path </li><li>redirects the Google bot to crawlers.php for seo</li></ul> |
+|crawlers.php|content folder|Does the same as the AJAX, but server side for the Google bot using the url parameter instead of the hash|
+|crawler-helpers/|content folder|php utilities used by crawlers.php|
+
     
 
 ## <a name="Configuration"></a>Configuration
