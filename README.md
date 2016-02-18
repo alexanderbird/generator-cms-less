@@ -110,17 +110,15 @@ I prefer the local server option, and I like to know that if I have to check som
     <script src="js/lib/cms-less/cms-less.js"></script>
     <script type="text/javascript">
       $(function() {
-        CmsLess.Init({
-          contentPath: 'custom/content/path'
-        });
+        CmsLess.Init();
       });
     </script>
 
 * make sure you use the correct `src`path to cms-less.js in place of `js/lib/cms-less/cms-less.js`
-* if you don't want to use `cms-less-destination`, set a different `destinationSelector` - see Configuration notes
+* if you don't want to use `cms-less-destination`, set a different `destinationSelector` in the Init() configuration - see Configuration notes
 
 ## 3. Dependancies (JQuery)
-CmsLess relies on JQuery. If you're not using jQuery 2.x on your project, add it
+CmsLess relies on JQuery 2.x. 
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     
