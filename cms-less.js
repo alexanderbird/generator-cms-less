@@ -45,9 +45,9 @@ var CmsLess = ( function($) {
     hash = hash || window.location.hash
     delimiterIndex = hash.lastIndexOf(config.anchorDelimiter);
     if(delimiterIndex > 0) {
-      return hash.slice(2, delimiterIndex);
+      return hash.slice(1, delimiterIndex);
     } else {
-      return hash.slice(2);
+      return hash.slice(1);
     }
   }
   
