@@ -56,7 +56,13 @@ var CmsLess = ( function($) {
     // if the path has a query parameter, change it to a hash parameter
     if(window.location.href.match(/\?p=.+/)) {
       var pageName = window.location.href.match(/\?p=(.*)$/)[1].split("&")[0];
-      window.location.href = "/#" + pageName;
+      var url = "/#" + pageName;
+      // change the url without redirecting the page
+      window.history.pushState("", pageName, url);
+      // on Back, go to the page before ?p=pageName
+      $(window).bind("popstate", function() {
+        window.history.back();
+      });
     }
 
     loadContentFromHash();
