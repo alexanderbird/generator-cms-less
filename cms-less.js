@@ -53,8 +53,16 @@ var CmsLess = ( function($) {
   
   function Init(options) {
     config = $.extend(config, options);
+    // if the path has a query parameter, change it to a hash parameter
+    if(window.location.href.match(/\?p=.+/)) {
+      var pageName = window.location.href.match(/\?p=(.*)$/)[1].split("&")[0];
+      window.location.href = "/#" + pageName;
+    }
+
     loadContentFromHash();
     $(window).bind('hashchange', loadContentFromHash);
+    
+    // progressively enhance links
     $("a[data-cms-less-path]").each(function() {
       var link = $(this);
       link.attr("href", "#" + link.attr("data-cms-less-path"));

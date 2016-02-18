@@ -55,16 +55,6 @@ foreach($contentsNodes->getElementsByTagName('body')->item(0)->childNodes as $no
   }
 }
 
-/*************************/
-/* Process the full page */
-/*************************/
-// remove the script tags
-$scriptElements = $completePage->getElementsByTagName('script');
-for ($i = $scriptElements->length; --$i >= 0; ) {
-  $script = $scriptElements->item($i);
-  $script->parentNode->removeChild($script);
-}
-
 /**************************/
 /*         Return         */
 /**************************/
