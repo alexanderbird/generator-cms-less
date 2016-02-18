@@ -78,6 +78,13 @@ To reiterate, all of the following will load `cms-less-content/foo.html`:
 
 You can test this out by [installing CmsLess](#Install) on your web site and browsing to the index page. From your web browser's JavaScript console, run `CmsLess.PageName('#somepage-totest')` to see what page name CmsLess extracts from the hash. If you don't provide an argument, it will take the hash from the `window.location.hash` property. 
 
+## Updating UI on page change
+CmsLess dispatches the `cms-less-page-change` event when the new page has loaded. 
+
+    $(document).bind('cms-less-page-change', function(e) {
+        console.log("The current page is " + e.originalEvent.detail.pageName);
+    });
+
 ## Without a web server
 **Sort-of**. [Some browsers protect from cross origin requests](http://stackoverflow.com/questions/20041656/xmlhttprequest-cannot-load-file-cross-origin-requests-are-only-supported-for-ht) when you're viewing the file direct from your local machine. This means that when CmsLess tries to load page content, the browser blocks the request (there's an error message shown in the developer console, and nothing shown on the web page).
 

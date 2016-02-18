@@ -9,9 +9,15 @@ var CmsLess = ( function($) {
 
   function loadContent(pageName) {
     $(config.destinationSelector).load(expandedContentPath(pageName), function(response, status) {
+      var actualPageName;
       if(status == 'error') {
         $(config.destinationSelector).load(expandedContentPath(config.notFoundPageName));
+        actualPageName = config.notFoundPageName;
+      } else {
+        actualPageName = pageName;
       }
+      pageChangeEvent = new CustomEvent('cms-less-page-change', { 'detail': { pageName: actualPageName }});
+      document.dispatchEvent(pageChangeEvent);
     });
   }
 
