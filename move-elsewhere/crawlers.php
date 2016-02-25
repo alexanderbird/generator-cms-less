@@ -14,6 +14,7 @@ if(isset($_GET['p'])) {
 if(file_exists("./$requestedPageName.html")) {
   $pageName = $requestedPageName;
 } else {
+  header("HTTP/1.0 404 Not Found");
   $pageName = '404';
 }
 

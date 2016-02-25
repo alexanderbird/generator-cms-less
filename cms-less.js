@@ -13,11 +13,21 @@ var CmsLess = ( function($) {
       var actualPageName;
       if(status == 'error') {
         $(config.destinationSelector).load(expandedContentPath(config.notFoundPageName));
+        markPageAsIndexable(false);
         afterPageLoad(config.notFoundPageName);
       } else {
+        markPageAsIndexable(true);
         afterPageLoad(pageName);
       }
     });
+  }
+
+  function markPageAsIndexable(indexable) {
+    if(indexable) {
+      $("head meta[name='robots']").remove();
+    } else {
+      $("head").append($("<meta name='robots' content='noindex' />"));
+    }
   }
 
   function beforePageLoad(newPageName) {
