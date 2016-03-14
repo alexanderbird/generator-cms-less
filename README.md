@@ -14,7 +14,7 @@ _the Content Management System that gets out of your way_
 
 
 
-**Want to get started quickly? Check out the [CmsLess boilerplate](alexanderbird/cms-less-boilerplate) repo for example usage**
+**Want to get started quickly? Check out the [CmsLess Boilerplate](https://github.com/alexanderbird/cms-less-boilerplate) repo for example usage, or view it live at http://cms-less.abird.ca** (but you should be warned, it's only a technical demo. The site is completely unstyled and has no interesting content.)
 
 ## <a name="Install"></a>Install
 1. [Clone](#clone)
