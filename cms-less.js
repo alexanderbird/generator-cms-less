@@ -4,7 +4,8 @@ var CmsLess = ( function($) {
     contentPath: 'cms-less-content',
     destinationSelector: '#cms-less-destination',
     anchorDelimiter: '-', 
-    notFoundPageName: '404'
+    notFoundPageName: '404',
+    redirects: {}
   }
 
   function loadContent(pageName) {
@@ -48,7 +49,11 @@ var CmsLess = ( function($) {
   function loadContentFromHash() {
     var pageName = extractPageNameFromHash() || 'index';
 
-    loadContent(pageName);
+    if(pageName in config.redirects) {
+      window.location.href = "/#" + config.redirects[pageName];
+    } else {
+      loadContent(pageName);
+    }
   }
 
   function extractPageNameFromHash(hash) {

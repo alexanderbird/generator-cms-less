@@ -200,7 +200,18 @@ The following options can be configured by passing an associative array to the I
 |`destinationSelector`|`#cms-less-destination`| Css selector for the element that will have its content will be set by CssLess |
 |`anchorDelimiter`|`-`|Delimiter between page name and anchor tag. See [Anchors](#Anchors)|
 |`notFoundPageName`|`404`|Page to be loaded if a page is not found. See [Page Not Found](#PageNotFound).|
+|`redirects`|`{}`|Object with "from" page names as keys, and "to" page names as values. See details below|
 
+### Page Redirection
+This feature is especially useful to redirect near-miss URLs. 
+
+As an example of how you could use it: by setting `redirects` to:
+
+    { 
+      'common_typo': 'page_you_think_they_meant' 
+    }
+
+will redirect `/#common_typo` to `/#page_you_think_they_meant`
 
 # Other Install Details
 
