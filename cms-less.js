@@ -66,7 +66,7 @@ var CmsLess = ( function($) {
     // if the path has a query parameter, change it to a hash parameter
     if(window.location.href.match(/\?p=.+/)) {
       var pageName = window.location.href.match(/\?p=(.*)$/)[1].split("&")[0];
-      window.location.href = "/#" + pageName;
+      window.history.replaceState(pageName, document.title, '/#' + pageName);
     }
 
     loadContentFromHash();
