@@ -32,8 +32,14 @@ _the Content Management System that gets out of your way_
     
 ### <a name="addToIndex"></a>2. Add to index.html
 
-    <div id="cms-less-destination"></div>
-    <script src="js/lib/cms-less/cms-less.js"></script>
+    <a class="cms-less-link" href="/p/page">
+    	<!-- .cms-less-link tells CmsLess to change this to href="#page"-->
+    	<!--if js disabled, /p/page links to php backend -->
+    	Link to Page</a>
+    <div id="cms-less-destination">
+    	<span id="cms-less-content-placeholder"><!-- avoid FOUC --></span>
+    </div>
+    <script src="/js/lib/cms-less/cms-less.js"></script>
     <script type="text/javascript">
       $(function() {
         CmsLess.Init();
@@ -53,8 +59,8 @@ In short, everything in the [`move-elsewhere`](move-elsewhere) folder belongs el
 
 |file|where it belongs|purpose|
 |----|----------------|-------|
-|404.html|content folder|Displays when an invalid page is accessed.|
 |.htaccess|project root|<ul><li>redirects /path to /#path </li><li>redirects the Google bot to crawlers.php for seo</li></ul> |
+|404.html|content folder|Displays when an invalid page is accessed.|
 |crawlers.php|content folder|Does the same as the AJAX, but server side for the Google bot using the url parameter instead of the hash|
 |crawler-helpers/|content folder|php utilities used by crawlers.php|
 
@@ -85,14 +91,14 @@ will redirect `/#common_typo` to `/#page_you_think_they_meant`
 ### <a name="Anchors"></a>About Anchors
 **Yes**, this works with page anchors. 
 
-Anything after the `anchorDelimiter` (default: `-`) in the url hash is ignored when loading the page content. This way, you can still use the hash for page anchors. The only nuisance is that the anchor must now be `<a href='#!pagename-anchorname'>Anchor Name</a>` to link to `<div id='pagename-anchorname'>Anchored Stuff</div>`. 
+Anything after the `anchorDelimiter` (default: `-`) in the url hash is ignored when loading the page content. This way, you can still use the hash for page anchors. The only nuisance is that the anchor must now be `<a href='#pagename-anchorname'>Anchor Name</a>` to link to `<div id='pagename-anchorname'>Anchored Stuff</div>`. 
 
 To reiterate, all of the following will load `cms-less-content/foo.html`:
 
-* `example.com/#!foo`
-* `example.com/#!foo-`
-* `example.com/#!foo-bar`
-* `example.com/#!foo-baz`
+* `example.com/#foo`
+* `example.com/#foo-`
+* `example.com/#foo-bar`
+* `example.com/#foo-baz`
 
 You can test this out by [installing CmsLess](#Install) on your web site and browsing to the index page. From your web browser's JavaScript console, run `CmsLess.PageName('#somepage-totest')` to see what page name CmsLess extracts from the hash. If you don't provide an argument, it will take the hash from the `window.location.hash` property. 
 

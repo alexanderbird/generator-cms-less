@@ -28,7 +28,7 @@ echo "<style>#cms-less-content-placeholder{display:none !important;}</style>";
 /*************************/
 $contents = file_get_contents("./$pageName.html");
 $html5Parser = new HTML5();
-$contentsNodes = $html5Parser->loadHTML($contents);
+$contentsNodes = $html5Parser->loadHTML("<div>$contents</div>");
 
 // the default 404 page uses JavaScript to set the name of the page that's missing
 //  doing the same thing here

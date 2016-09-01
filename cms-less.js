@@ -69,8 +69,8 @@ var CmsLess = ( function($) {
   function Init(options) {
     config = $.extend(config, options);
     // if the path has a query parameter, change it to a hash parameter
-    if(window.location.href.match(/\?p=.+/)) {
-      var pageName = window.location.href.match(/\?p=(.*)$/)[1].split("&")[0];
+    var pageName = tryParseTargetPage(window.location.href);
+    if(pageName) {
       window.history.replaceState(pageName, document.title, '/#' + pageName);
     }
 
@@ -78,10 +78,21 @@ var CmsLess = ( function($) {
     $(window).bind('hashchange', loadContentFromHash);
     
     // progressively enhance links
-    $("a[data-cms-less-path]").each(function() {
+    $("a.cms-less-link").each(function() {
       var link = $(this);
-      link.attr("href", "#" + link.attr("data-cms-less-path"));
+      var pageName = tryParseTargetPage($(this).attr("href"));
+      if(pageName) {
+        link.attr("href", "#" + pageName);
+      }
     });
+  }
+
+  function tryParseTargetPage(path) {
+    if(path.match(/p\/.*/)) {
+      return path.match(/p\/(.*)$/)[1];
+    } else {
+      return false;
+    }
   }
   
   return {
