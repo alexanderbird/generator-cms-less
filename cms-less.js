@@ -70,7 +70,7 @@ var CmsLess = ( function($) {
     config = $.extend(config, options);
     // if the path has a query parameter, change it to a hash parameter
     var pageName = tryParseTargetPage(window.location.href);
-    if(pageName) {
+    if(pageName !== false) {
       window.history.replaceState(pageName, document.title, '/#' + pageName);
     }
 
@@ -81,14 +81,16 @@ var CmsLess = ( function($) {
     $("a.cms-less-link").each(function() {
       var link = $(this);
       var pageName = tryParseTargetPage($(this).attr("href"));
-      if(pageName) {
+      if(pageName !== false) {
         link.attr("href", "#" + pageName);
       }
     });
   }
 
   function tryParseTargetPage(path) {
-    if(path.match(/p\/.*/)) {
+    if(path == "/") {
+      return '';
+    } else if(path.match(/p\/.*/)) {
       return path.match(/p\/(.*)$/)[1];
     } else {
       return false;
