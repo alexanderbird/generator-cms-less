@@ -1,12 +1,20 @@
+Options +FollowSymlinks
+
 RewriteEngine On
+
+# For Google's crawlers, use crawlers.php instead of index.html
+# The depends on your progressive enhancement - by default link to "/p/page"
+# CmsLess automatically converts links to #page
+RewriteCond %{REQUEST_URI}    ^/p/(.*)$                               [NC]
+RewriteRule .*                /cms-less-content/crawlers.php?p=%1     [L]
+# assume that the first request has js disabled just in case, and route to 
+# the crawlers file
+RewriteCond %{REQUEST_URI}    ^/$                                     [NC]
+RewriteRule .*                /cms-less-content/crawlers.php?p=       [L]
 
 # For assets and page content at /path/subdirectory, do nothing
 RewriteCond %{REQUEST_URI}    ^/([^/]+)/.*$                           [NC]
 RewriteRule .*                -                                       [L]
-
-# For Google's crawlers, use crawlers.php instead of index.html
-RewriteCond %{QUERY_STRING}   ^(?:.*=.*&)*p=([^&]*)$                  [NC]
-RewriteRule .*                /cms-less-content/crawlers.php?p=%1     [L]
 
 # Redirect /path to /#path
 RewriteCond %{REQUEST_URI}    ^/([^/]+)                               [NC]
