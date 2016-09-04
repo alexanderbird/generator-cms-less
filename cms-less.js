@@ -68,30 +68,37 @@ var CmsLess = ( function($) {
   
   function Init(options) {
     config = $.extend(config, options);
-    // if the path has a query parameter, change it to a hash parameter
-    var pageName = tryParseTargetPage(window.location.href);
-    if(pageName !== false) {
-      window.history.replaceState(pageName, document.title, '/#' + pageName);
+    // if the path is the PHP back-end path, upgrade it to the corresponding hash path
+    var hashPath = hashPathFromStandardPath(window.location.pathname);
+    if(hashPath !== false) {
+      window.history.replaceState(hashPath, document.title, hashPath);
     }
 
-    loadContentFromHash();
+    // if the site is accessed from a non-upgraded path, the content will be preloaded
+    var preloadedPageName = $(config.destinationSelector).data("cms-less-preloaded");
+    if(preloadedPageName) {
+      preloadedPageName = preloadedPageName == 'index' ? '' : preloadedPageName;
+      window.location.hash = "#" + preloadedPageName;
+    } else {
+      loadContentFromHash();
+    }
     $(window).bind('hashchange', loadContentFromHash);
     
-    // progressively enhance links
+    // upgrade all standard (PHP back-end) links to the corresponding hash path
     $("a.cms-less-link").each(function() {
       var link = $(this);
-      var pageName = tryParseTargetPage($(this).attr("href"));
-      if(pageName !== false) {
-        link.attr("href", "#" + pageName);
+      var hashPath = hashPathFromStandardPath($(this).attr("href"));
+      if(hashPath !== false) {
+        link.attr("href", hashPath);
       }
     });
   }
 
-  function tryParseTargetPage(path) {
+  function hashPathFromStandardPath(path) {
     if(path == "/") {
-      return '';
-    } else if(path.match(/p\/.*/)) {
-      return path.match(/p\/(.*)$/)[1];
+      return '/-#';
+    } else if(path.match(/\/[^\/-][^\/]*/)) {
+      return '/-#' + path.match(/\/([^\/-][^\/]*)$/)[1];
     } else {
       return false;
     }

@@ -1,16 +1,22 @@
 # CmsLess
 _the Content Management System that gets out of your way_
 
+**What**
+
 * ultra-lightweight 
-* dynamically load page content based on url hash
-* keep static web sites [DRY](http://programmer.97things.oreilly.com/wiki/index.php/Don't_Repeat_Yourself)
-* because WordPress is a great hammer but not every website is a nail
-* falls back to a short PHP script so Google's crawlers can see each page
+* for small static websites
+* if JavaScript is enabled, it dynamically loads page content
+* if JavaScript isn't enabled, it falls back to a PHP back-end
+
+**Why**
+
+* keep your static site [dry](http://programmer.97things.oreilly.com/wiki/index.php/Don't_Repeat_Yourself)
+* WordPress is overkill for a static website
 
 ### Requires
 * JQuery 2.X 
-* PHP (optional, fall back for non-js browsers and search engine crawlers)
-* Apache with mod_rewrite enabled (optional, makes the site more forgiving)
+* PHP 
+* Apache with mod_rewrite enabled
 
 
 
@@ -18,8 +24,9 @@ _the Content Management System that gets out of your way_
 
 ## <a name="Install"></a>Install
 1. [Clone](#clone)
-2. [Call from index.html](#addToIndex)
-3. [Check dependancies](#checkDependancies)
+2. [Markup Links](#markupLinks)
+3. [Add container to index.html](#addToIndex)
+4. [JavaScript libraries](#checkDependancies)
 4. [Move a few files around](#moveOrSoftlink)
 5. [Configure](#Configuration) (optional)
 6. Read about [all the gory details](#gore) (optional)
@@ -30,36 +37,38 @@ _the Content Management System that gets out of your way_
     mkdir cms-less-content
     cp js/lib/cms-less/404.html cms-less-content
     
-### <a name="addToIndex"></a>2. Add to index.html
-
-    <a class="cms-less-link" href="/p/page">
-    	<!-- .cms-less-link tells CmsLess to change this to href="#page"-->
-    	<!--if js disabled, /p/page links to php backend -->
+### <a name="markupLinks"></a>2. Markup Links
+    <a class="cms-less-link" href="/page">
+    	<!-- .cms-less-link tells CmsLess to change this to href="-#page"-->
+    	<!--if JavaScript is disabled, /page links to PHP backend -->
     	Link to Page</a>
+    
+### <a name="addToIndex"></a>3. Add content container to index.html
+
     <div id="cms-less-destination">
     	<span id="cms-less-content-placeholder"><!-- avoid FOUC --></span>
     </div>
+
+* make sure you use the correct `src`path to cms-less.js in place of `js/lib/cms-less/cms-less.js`
+* if you don't want to use `cms-less-destination`, set a different `destinationSelector` in the Init() configuration - see Configuration notes
+
+### <a name="checkDependancies"></a>4. load the scripts
+CmsLess relies on JQuery 2.x. 
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="/js/lib/cms-less/cms-less.js"></script>
     <script type="text/javascript">
       $(function() {
         CmsLess.Init();
       });
     </script>
-
-* make sure you use the correct `src`path to cms-less.js in place of `js/lib/cms-less/cms-less.js`
-* if you don't want to use `cms-less-destination`, set a different `destinationSelector` in the Init() configuration - see Configuration notes
-
-### 3. Dependancies (JQuery)
-CmsLess relies on JQuery 2.x. 
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     
 ### <a name="moveOrSoftlink"></a>4. Move/Softlink Files
 In short, everything in the [`move-elsewhere`](move-elsewhere) folder belongs elsewhere. You can move it directly to where it belongs, or create a symbolic link (`ln -s original/file target/file`) so you don't have to move it again if you update CmsLess. 
 
 |file|where it belongs|purpose|
 |----|----------------|-------|
-|.htaccess|project root|<ul><li>redirects /path to /#path </li><li>redirects the Google bot to crawlers.php for seo</li></ul> |
+|.htaccess|project root|Manages all the url rewriting magic |
 |404.html|content folder|Displays when an invalid page is accessed.|
 |crawlers.php|content folder|Does the same as the AJAX, but server side for the Google bot using the url parameter instead of the hash|
 |crawler-helpers/|content folder|php utilities used by crawlers.php|

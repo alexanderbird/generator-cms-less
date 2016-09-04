@@ -8,6 +8,7 @@ use Masterminds\HTML5;
 $requestedPageName = 'index';
 if(isset($_GET['p'])) {
   $requestedPageName = $_GET['p'];
+  $originalPageName = $requestedPageName;
   $requestedPageName = $requestedPageName == '' ? 'index' : $requestedPageName;
 }
 
@@ -18,10 +19,15 @@ if(file_exists("./$requestedPageName.html")) {
   $pageName = '404';
 }
 
+/*************************/
+/* Identify yourself     */
+/*************************/
+echo "<!-- CmsLess content rendered server-side -->\n";
+
 /************************/
 /* Hide the placeholder */
 /*************************/
-echo "<style>#cms-less-content-placeholder{display:none !important;}</style>";
+echo "<style>#cms-less-content-placeholder{display:none !important;}</style>\n";
 
 /*************************/
 /*  Prepare the content  */
@@ -38,6 +44,13 @@ foreach($contentsNodes->getElementsByTagName('span') as $span) {
   }
 }
 
+// script tags may appear above the script block - can't have that!
+$scriptTags = [];
+foreach($contentsNodes->getElementsByTagName('script') as $script) {
+  $scriptTags []= $script->cloneNode(true);
+  $script->parentNode->removeChild($script);
+}
+
 /*************************/
 /*  Load the outer page  */
 /*************************/
@@ -50,6 +63,7 @@ $completePage = $html5Parser->loadHTML($index);
 /*************************/
 // find the destination
 $destination = $completePage->getElementById('cms-less-destination');
+$destination->setAttribute("data-cms-less-preloaded", $originalPageName);
 
 // empty the destination
 foreach($destination->childNodes as $node) {
@@ -62,6 +76,15 @@ foreach($childNodes as $node) {
   $importedNode = $completePage->importNode($node, true);
   if($importedNode) {
     $destination->appendChild($importedNode);
+  }
+}
+
+// add the script tags
+$body = $completePage->getElementsByTagName("body")[0];
+foreach($scriptTags as $script) {
+  $script = $completePage->importNode($script, true);
+  if($script) {
+    $body->appendChild($script);
   }
 }
 
