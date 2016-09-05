@@ -15,7 +15,7 @@ var CmsLess = ( function($) {
       if(status == 'error') {
         $(config.destinationSelector).load(expandedContentPath(config.notFoundPageName));
         markPageAsIndexable(false);
-        afterPageLoad(config.notFoundPageName);
+        afterPageLoad(config.notFoundPageName, pageName);
       } else {
         markPageAsIndexable(true);
         afterPageLoad(pageName);
@@ -36,9 +36,9 @@ var CmsLess = ( function($) {
     document.body.scrollTop = document.documentElement.scrollTop = 0;
   }
 
-  function afterPageLoad(newPageName) {
+  function afterPageLoad(newPageName, missingPageName) {
     // dispatch an event
-    pageChangeEvent = new CustomEvent('cms-less-page-change', { 'detail': { pageName: newPageName }});
+    pageChangeEvent = new CustomEvent('cms-less-page-change', { 'detail': { 'pageName': newPageName, 'missingPageName': missingPageName }});
     document.dispatchEvent(pageChangeEvent);
   }
 
