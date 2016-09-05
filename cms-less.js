@@ -77,6 +77,7 @@ var CmsLess = ( function($) {
     // if the site is accessed from a non-upgraded path, the content will be preloaded
     var preloadedPageName = $(config.destinationSelector).data("cms-less-preloaded");
     if(preloadedPageName) {
+      afterPageLoad(preloadedPageName);
       preloadedPageName = preloadedPageName == 'index' ? '' : preloadedPageName;
       window.location.hash = "#" + preloadedPageName;
     } else {
@@ -84,6 +85,10 @@ var CmsLess = ( function($) {
     }
     $(window).bind('hashchange', loadContentFromHash);
     
+    UpgradeLinks();
+  }
+
+  function UpgradeLinks() {
     // upgrade all standard (PHP back-end) links to the corresponding hash path
     $("a.cms-less-link").each(function() {
       var link = $(this);
@@ -106,7 +111,8 @@ var CmsLess = ( function($) {
   
   return {
     Init : Init,
-    PageName : extractPageNameFromHash
+    PageName : extractPageNameFromHash,
+    UpgradeLinks: UpgradeLinks
   };
   
 } )( jQuery );
