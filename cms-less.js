@@ -1,24 +1,125 @@
 var CmsLess = ( function($) {
-
   var config = { 
     contentPath: 'cms-less-content',
     destinationSelector: '#cms-less-destination',
     anchorDelimiter: '-', 
     notFoundPageName: '404',
+    eagerLoadPages: [],
     redirects: {}
   }
+  
+  /* Public Members */
+  function Init(options) {
+    config = $.extend(config, options);
+    // if the path is the PHP back-end path, upgrade it to the corresponding hash path
+    var hashPath = hashPathFromStandardPath(window.location.pathname);
+    if(hashPath !== false) {
+      window.history.replaceState(hashPath, document.title, hashPath);
+    }
 
+    // if the site is accessed from a non-upgraded path, the content will be preloaded
+    var preloadedPageName = $(config.destinationSelector).data("cms-less-preloaded");
+    if(preloadedPageName) {
+      afterPageLoad(preloadedPageName);
+      preloadedPageName = preloadedPageName == 'index' ? '' : preloadedPageName;
+      window.location.hash = "#" + preloadedPageName;
+    } else {
+      loadContentFromHash();
+    }
+    $(window).bind('hashchange', loadContentFromHash);
+    
+    UpgradeLinks();
+
+    Cache.EagerLoad(config.eagerLoadPages);
+  }
+
+  function UpgradeLinks() {
+    // upgrade all standard (PHP back-end) links to the corresponding hash path
+    $("a.cms-less-link").each(function() {
+      var link = $(this);
+      var pageName = link.attr("href");
+      var hashPath = hashPathFromStandardPath(pageName);
+      if(hashPath !== false) {
+        link.attr("href", hashPath);
+      }
+    });
+  }
+
+  /* Nested Classes */
+  var Cache = (function () {
+    var pageNotFoundPromise;
+    
+    var cache = {};
+    
+    function Get (pageName, handlePageContent) {
+      ensureLoaded(pageName); 
+      cache[pageName].retrieve(handlePageContent);
+    }
+
+    function EagerLoad (pagesToLoad) {
+      $.each(pagesToLoad, function (_, pageName) {
+        ensureLoaded(pageName);
+      });
+    }
+
+    function getPageNotFoundResult () {
+      if(!pageNotFoundPromise) {
+        pageNotFoundPromise = $.get(expandedContentPath(config.notFoundPageName)).then(
+          function (page) {
+            return new Result(page, 404);
+          }, function () {
+            // Can't show the 404 page, show something mildly helpful
+            var error = $("<div class='error'>Sorry, something wen't wrong when trying to load this page</div>");
+            return new Result(error, 500);
+          }
+        );
+      }
+
+      return pageNotFoundPromise;
+    }
+
+    function ensureLoaded (pageName) {
+      if(!(pageName in cache)) {
+        cache[pageName] = new CacheEntry(pageName);
+      }
+    }
+
+    var Result = function (page, statusCode) {
+      this.page = page;
+      this.code = statusCode;
+    };
+
+    var CacheEntry = function (pageName) {
+      this.promise = $.get(expandedContentPath(pageName)).then(
+        function (page) {
+          return new Result(page, 200);
+        }, function () {
+          return getPageNotFoundResult();
+        }
+      )
+      
+      this.retrieve = function (handlePageContent) {
+        this.promise.always(handlePageContent);
+      }
+    }
+
+    return {
+      EagerLoad: EagerLoad,
+      Get: Get
+    }
+  }());
+
+  /* Private Members */
   function loadContent(pageName) {
     beforePageLoad(pageName);
-    $(config.destinationSelector).load(expandedContentPath(pageName), function(response, status) {
-      var actualPageName;
-      if(status == 'error') {
-        $(config.destinationSelector).load(expandedContentPath(config.notFoundPageName));
-        markPageAsIndexable(false);
-        afterPageLoad(config.notFoundPageName, pageName);
-      } else {
+    Cache.Get(pageName, function (result) {
+      $(config.destinationSelector).html(result.page);
+      if(result.code == 200) {
         markPageAsIndexable(true);
         afterPageLoad(pageName);
+      } else {
+        markPageAsIndexable(false);
+        afterPageLoad(config.notFoundPageName, pageName);
       }
     });
   }
@@ -64,39 +165,6 @@ var CmsLess = ( function($) {
     } else {
       return hash.slice(1);
     }
-  }
-  
-  function Init(options) {
-    config = $.extend(config, options);
-    // if the path is the PHP back-end path, upgrade it to the corresponding hash path
-    var hashPath = hashPathFromStandardPath(window.location.pathname);
-    if(hashPath !== false) {
-      window.history.replaceState(hashPath, document.title, hashPath);
-    }
-
-    // if the site is accessed from a non-upgraded path, the content will be preloaded
-    var preloadedPageName = $(config.destinationSelector).data("cms-less-preloaded");
-    if(preloadedPageName) {
-      afterPageLoad(preloadedPageName);
-      preloadedPageName = preloadedPageName == 'index' ? '' : preloadedPageName;
-      window.location.hash = "#" + preloadedPageName;
-    } else {
-      loadContentFromHash();
-    }
-    $(window).bind('hashchange', loadContentFromHash);
-    
-    UpgradeLinks();
-  }
-
-  function UpgradeLinks() {
-    // upgrade all standard (PHP back-end) links to the corresponding hash path
-    $("a.cms-less-link").each(function() {
-      var link = $(this);
-      var hashPath = hashPathFromStandardPath($(this).attr("href"));
-      if(hashPath !== false) {
-        link.attr("href", hashPath);
-      }
-    });
   }
 
   function hashPathFromStandardPath(path) {
