@@ -1,11 +1,22 @@
-var CmsLess = ( function($) {
+var CmsLess = ( function() {
   var config = { 
+    anchorDelimiter: '-', 
     contentPath: 'cms-less-content',
     destinationSelector: '#cms-less-destination',
-    anchorDelimiter: '-', 
-    notFoundPageName: '404',
     eagerLoadPages: [],
-    redirects: {}
+    fileExtension: ".html",
+    indexPageName: "index",
+    notFoundPageName: "404",
+    pathSeparator: "/",
+    redirects: {},
+    serverErrorElement: $("<div class='error'>Sorry, something wen't wrong when trying to load this page</div>")
+  }
+
+  var constants = {
+    linkSelector: "a.cms-less-link",
+    metaIndexableSelector: "head meta[name='robots']",
+    metaIndexableElement: $("<meta name='robots' content='noindex' />"),
+    preloadedDataName: "cms-less-preloaded"
   }
   
   /* Public Members */
@@ -18,10 +29,10 @@ var CmsLess = ( function($) {
     }
 
     // if the site is accessed from a non-upgraded path, the content will be preloaded
-    var preloadedPageName = $(config.destinationSelector).data("cms-less-preloaded");
+    var preloadedPageName = $(config.destinationSelector).data(constants.preloadedDataName);
     if(preloadedPageName) {
       afterPageLoad(preloadedPageName);
-      preloadedPageName = preloadedPageName == 'index' ? '' : preloadedPageName;
+      preloadedPageName = preloadedPageName == config.indexPageName ? '' : preloadedPageName;
       window.location.hash = "#" + preloadedPageName;
     } else {
       loadContentFromHash();
@@ -35,7 +46,7 @@ var CmsLess = ( function($) {
 
   function UpgradeLinks() {
     // upgrade all standard (PHP back-end) links to the corresponding hash path
-    $("a.cms-less-link").each(function() {
+    $(constants.linkSelector).each(function() {
       var link = $(this);
       var pageName = link.attr("href");
       var hashPath = hashPathFromStandardPath(pageName);
@@ -69,7 +80,7 @@ var CmsLess = ( function($) {
             return new Result(page, 404);
           }, function () {
             // Can't show the 404 page, show something mildly helpful
-            var error = $("<div class='error'>Sorry, something wen't wrong when trying to load this page</div>");
+            var error = config.serverErrorElement;
             return new Result(error, 500);
           }
         );
@@ -135,9 +146,9 @@ var CmsLess = ( function($) {
 
   function markPageAsIndexable(indexable) {
     if(indexable) {
-      $("head meta[name='robots']").remove();
+      $(constants.metaIndexableSelector).remove();
     } else {
-      $("head").append($("<meta name='robots' content='noindex' />"));
+      $("head").append(constants.metaIndexableElement);
     }
   }
 
@@ -153,7 +164,7 @@ var CmsLess = ( function($) {
   }
 
   function expandedContentPath(pageName) {
-    return config.contentPath + "/" + pageName + ".html";
+    return config.contentPath + config.pathSeparator + pageName + config.fileExtension;
   }
   
   function loadContentFromHash() {
@@ -192,4 +203,4 @@ var CmsLess = ( function($) {
     UpgradeLinks: UpgradeLinks
   };
   
-} )( jQuery );
+}() );
