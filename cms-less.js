@@ -26,7 +26,7 @@ var CmsLess = ( function($) {
     } else {
       loadContentFromHash();
     }
-    $(window).bind('hashchange', loadContentFromHash);
+    $(window).on('hashchange', loadContentFromHash);
     
     UpgradeLinks();
 
@@ -47,19 +47,19 @@ var CmsLess = ( function($) {
 
   /* Nested Classes */
   var Cache = (function () {
-    var pageNotFoundPromise;
-    
     var cache = {};
+
+    var pageNotFoundPromise;
+
+    var pagesToLoad = [];
     
     function Get (pageName, handlePageContent) {
-      ensureLoaded(pageName); 
-      cache[pageName].retrieve(handlePageContent);
+      ensureLoaded(pageName).then(handlePageContent);
     }
 
-    function EagerLoad (pagesToLoad) {
-      $.each(pagesToLoad, function (_, pageName) {
-        ensureLoaded(pageName);
-      });
+    function EagerLoad (_pagesToLoad) {
+      pagesToLoad = _pagesToLoad || [];
+      eagerLoadNextPage();
     }
 
     function getPageNotFoundResult () {
@@ -78,10 +78,19 @@ var CmsLess = ( function($) {
       return pageNotFoundPromise;
     }
 
+    function eagerLoadNextPage () {
+      page = pagesToLoad.pop();
+      if(page) {
+        ensureLoaded(page).then(eagerLoadNextPage);
+      }
+    }
+
     function ensureLoaded (pageName) {
       if(!(pageName in cache)) {
         cache[pageName] = new CacheEntry(pageName);
       }
+
+      return cache[pageName];
     }
 
     var Result = function (page, statusCode) {
@@ -98,7 +107,7 @@ var CmsLess = ( function($) {
         }
       )
       
-      this.retrieve = function (handlePageContent) {
+      this.then= function (handlePageContent) {
         this.promise.always(handlePageContent);
       }
     }
