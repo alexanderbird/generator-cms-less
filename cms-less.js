@@ -16,7 +16,8 @@ var CmsLess = ( function() {
     linkSelector: "a.cms-less-link",
     metaIndexableSelector: "head meta[name='robots']",
     metaIndexableElement: $("<meta name='robots' content='noindex' />"),
-    preloadedDataName: "cms-less-preloaded"
+    preloadedDataName: "cms-less-preloaded",
+    urlPrefix: "/-#"
   }
   
   /* Public Members */
@@ -31,13 +32,17 @@ var CmsLess = ( function() {
     // if the site is accessed from a non-upgraded path, the content will be preloaded
     var preloadedPageName = $(config.destinationSelector).data(constants.preloadedDataName);
     if(preloadedPageName) {
-      afterPageLoad(preloadedPageName);
+      EventManager.Loaded(preloadedPageName);
       preloadedPageName = preloadedPageName == config.indexPageName ? '' : preloadedPageName;
       window.location.hash = "#" + preloadedPageName;
     } else {
       loadContentFromHash();
     }
+
     $(window).on('hashchange', loadContentFromHash);
+    $(document).on(EventManager.EventNames.loading, function (e) {
+      document.body.scrollTop = document.documentElement.scrollTop = 0;
+    });
     
     UpgradeLinks();
 
@@ -56,7 +61,48 @@ var CmsLess = ( function() {
     });
   }
 
-  /* Nested Classes */
+  /* Nested Modules */
+  var EventManager = (function () {
+    var config = {
+      eventNamespace: "cms-less",
+      events: {
+        loading: "page-loading",
+        loaded: "page-loaded"
+      }
+    }
+
+    // programatically prepend event namespace
+    $.each(config.events, function (codeName, stringName) {
+      config.events[codeName] = config.eventNamespace + ":" + stringName;
+    });
+
+    function PageEventData (pageName, missingPageName) {
+      this.detail = {
+        pageName: pageName,
+        missingPageName: missingPageName
+      }
+    }
+
+    function Loading (pageName, missingPageName) {
+      dispatchPageEvent(config.events.loading, new PageEventData(pageName));
+    }
+
+    function Loaded (pageName, missingPageName) {
+      dispatchPageEvent(config.events.loaded, new PageEventData(pageName, missingPageName));
+    }
+
+    function dispatchPageEvent(eventName, pageEventData) {
+      pageChangeEvent = new CustomEvent(eventName, pageEventData);
+      document.dispatchEvent(pageChangeEvent);
+    }
+
+    return {
+      Loaded: Loaded,
+      Loading: Loading,
+      EventNames: config.events
+    }
+  }());
+
   var Cache = (function () {
     var cache = {};
 
@@ -131,15 +177,15 @@ var CmsLess = ( function() {
 
   /* Private Members */
   function loadContent(pageName) {
-    beforePageLoad(pageName);
+    EventManager.Loading(pageName);
     Cache.Get(pageName, function (result) {
       $(config.destinationSelector).html(result.page);
       if(result.code == 200) {
         markPageAsIndexable(true);
-        afterPageLoad(pageName);
+        EventManager.Loaded(pageName);
       } else {
         markPageAsIndexable(false);
-        afterPageLoad(config.notFoundPageName, pageName);
+        EventManager.Loaded(config.notFoundPageName, pageName);
       }
     });
   }
@@ -152,17 +198,6 @@ var CmsLess = ( function() {
     }
   }
 
-  function beforePageLoad(newPageName) {
-    // scroll to the top
-    document.body.scrollTop = document.documentElement.scrollTop = 0;
-  }
-
-  function afterPageLoad(newPageName, missingPageName) {
-    // dispatch an event
-    pageChangeEvent = new CustomEvent('cms-less-page-change', { 'detail': { 'pageName': newPageName, 'missingPageName': missingPageName }});
-    document.dispatchEvent(pageChangeEvent);
-  }
-
   function expandedContentPath(pageName) {
     return config.contentPath + config.pathSeparator + pageName + config.fileExtension;
   }
@@ -171,7 +206,7 @@ var CmsLess = ( function() {
     var pageName = extractPageNameFromHash() || 'index';
 
     if(pageName in config.redirects) {
-      window.location.href = "/#" + config.redirects[pageName];
+      window.location.href = constants.urlPrefix + config.redirects[pageName];
     } else {
       loadContent(pageName);
     }
@@ -189,9 +224,9 @@ var CmsLess = ( function() {
 
   function hashPathFromStandardPath(path) {
     if(path == "/") {
-      return '/-#';
+      return constants.urlPrefix;
     } else if(path.match(/\/[^\/-][^\/]*/)) {
-      return '/-#' + path.match(/\/([^\/-][^\/]*)$/)[1];
+      return constants.urlPrefix + path.match(/\/([^\/-][^\/]*)$/)[1];
     } else {
       return false;
     }
