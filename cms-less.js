@@ -1,17 +1,22 @@
 var CmsLess = ( function() {
+  /* User-configurable options */
   var config = { 
-    anchorDelimiter: '-', 
+    anchorDelimiter: '-', /* ignore hash content to the right of delimiter */ 
+    destinationSelector: '#cms-less-destination', /* id of html element to fill with content */
+    eagerLoadPages: [], /* list of pages to eager load */
+
+    /* load content from ( contentPath + pathSeparator + pageName + fileExtension ) */
     contentPath: 'cms-less-content',
-    destinationSelector: '#cms-less-destination',
-    eagerLoadPages: [],
-    fileExtension: ".html",
-    indexPageName: "index",
-    notFoundPageName: "404",
     pathSeparator: "/",
-    redirects: {},
-    serverErrorElement: $("<div class='error'>Sorry, something wen't wrong when trying to load this page</div>")
+    fileExtension: ".html",
+
+    indexPageName: "index", /* treat empty page name as indexPageName */
+    notFoundPageName: "404", /* load this page name if the actual page can't be found */
+    redirects: {}, /* if pageName is in redirects, change pageName to redirects[pageName] */
+    serverErrorElement: $("<div class='error'>Sorry, something wen't wrong when trying to load this page</div>") /* if 404 page can't be found */
   }
 
+  /* Not user-configurable */
   var constants = {
     linkSelector: "a.cms-less-link",
     metaIndexableSelector: "head meta[name='robots']",
@@ -44,14 +49,20 @@ var CmsLess = ( function() {
       document.body.scrollTop = document.documentElement.scrollTop = 0;
     });
     
-    UpgradeLinks();
+    upgradeLinks();
 
     Cache.EagerLoad(config.eagerLoadPages);
   }
 
-  function UpgradeLinks() {
+  function upgradeLinks(domFragmentSelector) {
+    var links;
+    if(domFragmentSelector) {
+      links = $(domFragmentSelector).find(constants.linkSelector);
+    } else {
+      links = $(constants.linkSelector);
+    }
     // upgrade all standard (PHP back-end) links to the corresponding hash path
-    $(constants.linkSelector).each(function() {
+    links.each(function() {
       var link = $(this);
       var pageName = link.attr("href");
       var hashPath = hashPathFromStandardPath(pageName);
@@ -164,7 +175,7 @@ var CmsLess = ( function() {
         }
       )
       
-      this.then= function (handlePageContent) {
+      this.then = function (handlePageContent) {
         this.promise.always(handlePageContent);
       }
     }
@@ -187,6 +198,7 @@ var CmsLess = ( function() {
         markPageAsIndexable(false);
         EventManager.Loaded(config.notFoundPageName, pageName);
       }
+      upgradeLinks(config.destinationSelector);
     });
   }
 
@@ -234,8 +246,7 @@ var CmsLess = ( function() {
   
   return {
     Init : Init,
-    PageName : extractPageNameFromHash,
-    UpgradeLinks: UpgradeLinks
+    PageName : extractPageNameFromHash
   };
   
 }() );
