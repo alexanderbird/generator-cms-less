@@ -3,20 +3,16 @@ var yeoman = require('yeoman-generator');
 
 module.exports = yeoman.Base.extend({
   prompting: function () {
-    // Have Yeoman greet the user.
     this.log(
       'Welcome to the CmsLess generator!'
-    );
-
-    this.log(
-      'TODO: check that the .htaccess page is actually copied over'
     );
 
     var prompts = [{
       type: 'input',
       name: 'siteTitle',
       message: 'What is the title of your website?',
-      default: 'CmsLess Website'
+      default: 'CmsLess Website',
+      store: true
     }];
 
     return this.prompt(prompts).then(function (props) {
@@ -40,6 +36,11 @@ module.exports = yeoman.Base.extend({
       {
         title: this.props.siteTitle
       }
+    );
+
+    this.fs.copy(
+      this.templatePath('.htaccess'),
+      this.destinationPath('.htaccess')
     );
   },
 
