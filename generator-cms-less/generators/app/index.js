@@ -26,7 +26,8 @@ module.exports = yeoman.Base.extend({
       var folder = foldersToCopy[index];
       this.fs.copy(
         this.templatePath(folder + '/**/*'),
-        this.destinationPath(folder)
+        this.destinationPath(folder),
+        { globOptions: { dot: true } }
       );
     }
 

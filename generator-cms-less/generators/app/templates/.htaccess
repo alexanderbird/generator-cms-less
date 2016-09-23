@@ -12,12 +12,12 @@ RewriteRule .*                /index.html?skip_preprocessing=true     [L]
 # Any single page names /page /foobar-baz /etc are passed off to the 
 # PHP back-end
 RewriteCond %{REQUEST_URI}    ^/$                                     [NC]
-RewriteRule .*                /cms-less-content/crawlers.php?p=index  [L]
+RewriteRule .*                /cms-less-content/CmsLess.php?p=index  [L]
 
 # Respect the skip_preprocessing flag
 RewriteCond %{QUERY_STRING}   ^(?!skip_preprocessing=true)$               [NC]
 RewriteCond %{REQUEST_URI}    ^/([^/]+)$                              [NC]
-RewriteRule .*                /cms-less-content/crawlers.php?p=%1     [L]
+RewriteRule .*                /cms-less-content/CmsLess.php?p=%1     [L]
 
 # For assets and page content at /path/subdirectory, do nothing
 RewriteCond %{REQUEST_URI}    ^/([^/]+)/.*$                           [NC]

@@ -2,7 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 'On'); // or ini_set('display_errors', 1);
 
-require 'crawler-helpers/autoload.php';
+require 'php-lib/autoload.php';
 use Masterminds\HTML5;
 
 $requestedPageName = 'index';

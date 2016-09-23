@@ -3,7 +3,7 @@
 function autoload($className)
 {
     $className = ltrim($className, '\\');
-    $root = './crawler-helpers/';
+    $root = './php-lib/';
     $fileName  = '';
     $namespace = '';
     if ($lastNsPos = strrpos($className, '\\')) {
