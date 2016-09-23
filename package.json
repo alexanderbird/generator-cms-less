@@ -42,8 +42,6 @@
   },
   "repository": "alexanderbird/generator-cms-less",
   "scripts": {
-    "prepublish": "gulp prepublish",
-    "test": "gulp"
   },
   "license": "MIT"
 }
