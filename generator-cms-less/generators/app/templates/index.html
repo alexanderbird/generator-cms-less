@@ -1,37 +1,45 @@
 <html>
-  <head>
-    <title><%= title %></title>
-    <link rel="stylesheet" type="text/css" href="css/main.css">
-  </head>
-  <body>
-    <!-- USING CmsLess: -->
-    <h1><a class="cms-less-link" href="/"><%= title %></a></h1>
-    <ul>
-      <li><a class="cms-less-link" href="/">Home</a>
-      <li><a class="cms-less-link" href="/about">About</a>
-      <li><a class="cms-less-link" href="/missing">Missing Page</a>
-    </ul>
-    <div id="cms-less-destination">
-      <span id="cms-less-content-placeholder"></span>
-        <!-- will be populated from cms-less-content/pagename.html -->
-        <!--    where the pagename is the hash up to the last hyphen -->
-        <!--    and if there is no hash, pagename is 'index' -->
-        <!--    and if the page can't be loaded, the pagename is '404' -->
-   </div>
+	<head>
+		<title><%= title %></title>
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+	</head>
+	<body>
+		<!-- USING CmsLess: -->
+		<h1><a class="cms-less-link" href="/"><%= title %></a></h1>
+		<ul>
+			<li><a class="cms-less-link" href="/">Home</a>
+			<li><a class="cms-less-link" href="/about">About</a>
+			<li><a class="cms-less-link" href="/missing">Missing Page</a>
+		</ul>
+		<div id="cms-less-destination">
+			<span id="cms-less-content-placeholder"></span>
+				<!-- will be populated from cms-less-content/pagename.html -->
+				<!--		where the pagename is the hash up to the last hyphen -->
+				<!--		and if there is no hash, pagename is 'index' -->
+				<!--		and if the page can't be loaded, the pagename is '404' -->
+	 </div>
 
-   <div id="footer">
-    Yup, this is pretty ugly. It's a technical demo to get you started; the razzle dazzle is up to you.
-   </div>
+	 <div id="footer">
+		Yup, this is pretty ugly. It's a technical demo to get you started; the razzle dazzle is up to you.
+	 </div>
 
-   <!-- SETUP for CmsLess: -->
-   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-   <script src="/js/lib/cms-less.js"></script>
-   <script type="text/javascript">
-     $(function() {
-       CmsLess.Init({
-         'eagerLoadPages': ['index', 'about', 'missing']
-       });
-     });
-   </script>
+	 <!-- SETUP for CmsLess: -->
+	 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+	 <script src="/js/lib/cms-less.js"></script>
+	 <script type="text/javascript">
+		 $(function() {
+			 $(document).on('cms-less:page-loading', function(e) {
+				 console.log("Starting to load " + e.originalEvent.detail.pageName);
+			 });
+				
+			 $(document).on('cms-less:page-loaded', function(e) {
+				console.log("Finished loading " + e.originalEvent.detail.pageName);
+			 });
+
+			 CmsLess.Init({
+				 'eagerLoadPages': ['index', 'about', 'missing']
+			 });
+		 });
+	 </script>
  </body>
 </html>
