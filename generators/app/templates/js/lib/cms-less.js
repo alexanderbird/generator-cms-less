@@ -1,252 +1,291 @@
-var CmsLess = ( function() {
-  /* User-configurable options */
-  var config = { 
-    anchorDelimiter: '-', /* ignore hash content to the right of delimiter */ 
-    destinationSelector: '#cms-less-destination', /* id of html element to fill with content */
-    eagerLoadPages: [], /* list of pages to eager load */
+var CmsLess =
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
 
-    /* load content from ( contentPath + pathSeparator + pageName + fileExtension ) */
-    contentPath: 'cms-less-content',
-    pathSeparator: "/",
-    fileExtension: ".html",
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
 
-    indexPageName: "index", /* treat empty page name as indexPageName */
-    notFoundPageName: "404", /* load this page name if the actual page can't be found */
-    redirects: {}, /* if pageName is in redirects, change pageName to redirects[pageName] */
-    serverErrorElement: $("<div class='error'>Sorry, something wen't wrong when trying to load this page</div>") /* if 404 page can't be found */
-  }
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
 
-  /* Not user-configurable */
-  var constants = {
-    linkSelector: "a.cms-less-link",
-    metaIndexableSelector: "head meta[name='robots']",
-    metaIndexableElement: $("<meta name='robots' content='noindex' />"),
-    preloadedDataName: "cms-less-preloaded",
-    urlPrefix: "/-#"
-  }
-  
-  /* Public Members */
-  function Init(options) {
-    config = $.extend(config, options);
-    // if the path is the PHP back-end path, upgrade it to the corresponding hash path
-    var hashPath = hashPathFromStandardPath(window.location.pathname);
-    if(hashPath !== false) {
-      window.history.replaceState(hashPath, document.title, hashPath);
-    }
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
 
-    // if the site is accessed from a non-upgraded path, the content will be preloaded
-    var preloadedPageName = $(config.destinationSelector).data(constants.preloadedDataName);
-    if(preloadedPageName) {
-      EventManager.Loaded(preloadedPageName);
-      preloadedPageName = preloadedPageName == config.indexPageName ? '' : preloadedPageName;
-      window.location.hash = "#" + preloadedPageName;
-    } else {
-      loadContentFromHash();
-    }
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
 
-    $(window).on('hashchange', loadContentFromHash);
-    $(document).on(EventManager.EventNames.loading, function (e) {
-      document.body.scrollTop = document.documentElement.scrollTop = 0;
-    });
-    
-    upgradeLinks();
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
 
-    Cache.EagerLoad(config.eagerLoadPages);
-  }
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
 
-  function upgradeLinks(domFragmentSelector) {
-    var links;
-    if(domFragmentSelector) {
-      links = $(domFragmentSelector).find(constants.linkSelector);
-    } else {
-      links = $(constants.linkSelector);
-    }
-    // upgrade all standard (PHP back-end) links to the corresponding hash path
-    links.each(function() {
-      var link = $(this);
-      var pageName = link.attr("href");
-      var hashPath = hashPathFromStandardPath(pageName);
-      if(hashPath !== false) {
-        link.attr("href", hashPath);
-      }
-    });
-  }
 
-  /* Nested Modules */
-  var EventManager = (function () {
-    var config = {
-      eventNamespace: "cms-less",
-      events: {
-        loading: "page-loading",
-        loaded: "page-loaded"
-      }
-    }
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
 
-    // programatically prepend event namespace
-    $.each(config.events, function (codeName, stringName) {
-      config.events[codeName] = config.eventNamespace + ":" + stringName;
-    });
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
 
-    function PageEventData (pageName, missingPageName) {
-      this.detail = {
-        pageName: pageName,
-        missingPageName: missingPageName
-      }
-    }
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
 
-    function Loading (pageName, missingPageName) {
-      dispatchPageEvent(config.events.loading, new PageEventData(pageName));
-    }
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports, __webpack_require__) {
 
-    function Loaded (pageName, missingPageName) {
-      dispatchPageEvent(config.events.loaded, new PageEventData(pageName, missingPageName));
-    }
+	"use strict";
+	var event_manager_1 = __webpack_require__(1);
+	var cache_1 = __webpack_require__(2);
+	var CmsLess;
+	(function (CmsLess) {
+	    var config = {
+	        anchorDelimiter: '-',
+	        destinationSelector: '#cms-less-destination',
+	        eagerLoadPages: [],
+	        /* load content from ( contentPath + pathSeparator + pageName + fileExtension ) */
+	        contentPath: 'cms-less-content',
+	        pathSeparator: "/",
+	        fileExtension: ".html",
+	        indexPageName: "index",
+	        notFoundPageName: "404",
+	        redirects: {},
+	        serverErrorElement: $("<div class='error'>Sorry, something wen't wrong when trying to load this page</div>") /* if 404 page can't be found */
+	    };
+	    /* Not user-configurable */
+	    var constants = {
+	        linkSelector: "a.cms-less-link",
+	        metaIndexableSelector: "head meta[name='robots']",
+	        metaIndexableElement: $("<meta name='robots' content='noindex' />"),
+	        preloadedDataName: "cms-less-preloaded",
+	        urlPrefix: "/-#"
+	    };
+	    function Init(options) {
+	        config = $.extend(config, options);
+	        cache_1.Cache.Init(config);
+	        // if the path is the PHP back-end path, upgrade it to the corresponding hash path
+	        var hashPath = hashPathFromStandardPath(window.location.pathname);
+	        if (hashPath !== false) {
+	            window.history.replaceState(hashPath, document.title, hashPath);
+	        }
+	        // if the site is accessed from a non-upgraded path, the content will be preloaded - respond accordingly
+	        var preloadedPageName = $(config.destinationSelector).data(constants.preloadedDataName);
+	        if (preloadedPageName) {
+	            event_manager_1.EventManager.Loaded(preloadedPageName);
+	            preloadedPageName = preloadedPageName == config.indexPageName ? '' : preloadedPageName;
+	            window.location.hash = "#" + preloadedPageName;
+	        }
+	        else {
+	            loadContentFromHash();
+	        }
+	        // load content when the hash changes
+	        $(window).on('hashchange', loadContentFromHash);
+	        // scroll to the top when a page is loaded
+	        $(document).on(event_manager_1.EventManager.EventNames.loading, function (e) {
+	            document.body.scrollTop = document.documentElement.scrollTop = 0;
+	        });
+	        upgradeLinks();
+	        cache_1.Cache.EagerLoad(config.eagerLoadPages);
+	    }
+	    CmsLess.Init = Init;
+	    function PageName(hash) {
+	        hash = hash || window.location.hash;
+	        var pageName;
+	        var delimiterIndex = hash.lastIndexOf(config.anchorDelimiter);
+	        if (delimiterIndex > 0) {
+	            pageName = hash.slice(1, delimiterIndex);
+	        }
+	        else {
+	            pageName = hash.slice(1);
+	        }
+	        return pageName || config.indexPageName;
+	    }
+	    CmsLess.PageName = PageName;
+	    function upgradeLinks(domFragmentSelector) {
+	        var links;
+	        if (domFragmentSelector) {
+	            links = $(domFragmentSelector).find(constants.linkSelector);
+	        }
+	        else {
+	            links = $(constants.linkSelector);
+	        }
+	        // upgrade all standard (PHP back-end) links to the corresponding hash path
+	        links.each(function () {
+	            var link = $(this);
+	            var pageName = link.attr("href");
+	            var hashPath = hashPathFromStandardPath(pageName);
+	            if (hashPath !== false) {
+	                link.attr("href", hashPath);
+	            }
+	        });
+	    }
+	    function loadContent(pageName) {
+	        event_manager_1.EventManager.Loading(pageName);
+	        cache_1.Cache.Get(pageName, function (result) {
+	            $(config.destinationSelector).html(result.page);
+	            if (result.code == 200) {
+	                markPageAsIndexable(true);
+	                event_manager_1.EventManager.Loaded(pageName);
+	            }
+	            else {
+	                markPageAsIndexable(false);
+	                event_manager_1.EventManager.Loaded(config.notFoundPageName, pageName);
+	            }
+	            upgradeLinks(config.destinationSelector);
+	        });
+	    }
+	    function markPageAsIndexable(indexable) {
+	        if (indexable) {
+	            $(constants.metaIndexableSelector).remove();
+	        }
+	        else {
+	            $("head").append(constants.metaIndexableElement);
+	        }
+	    }
+	    function loadContentFromHash() {
+	        var pageName = PageName();
+	        if (pageName in config.redirects) {
+	            window.location.href = constants.urlPrefix + config.redirects[pageName];
+	        }
+	        else {
+	            loadContent(pageName);
+	        }
+	    }
+	    function hashPathFromStandardPath(path) {
+	        if (path == "/") {
+	            return constants.urlPrefix;
+	        }
+	        else if (path.match(/\/[^\/-][^\/]*/)) {
+	            return constants.urlPrefix + path.match(/\/([^\/-][^\/]*)$/)[1];
+	        }
+	        else {
+	            return false;
+	        }
+	    }
+	})(CmsLess || (CmsLess = {}));
+	module.exports = CmsLess;
 
-    function dispatchPageEvent(eventName, pageEventData) {
-      pageChangeEvent = new CustomEvent(eventName, pageEventData);
-      document.dispatchEvent(pageChangeEvent);
-    }
 
-    return {
-      Loaded: Loaded,
-      Loading: Loading,
-      EventNames: config.events
-    }
-  }());
+/***/ },
+/* 1 */
+/***/ function(module, exports) {
 
-  var Cache = (function () {
-    var cache = {};
+	"use strict";
+	var PageEventData = (function () {
+	    function PageEventData(pageName, missingPageName) {
+	        this.detail = {
+	            pageName: pageName,
+	            missingPageName: missingPageName
+	        };
+	    }
+	    return PageEventData;
+	}());
+	var EventManager;
+	(function (EventManager) {
+	    EventManager.EventNames = {
+	        loading: "cms-less:page-loading",
+	        loaded: "cms-less:page-loaded"
+	    };
+	    function Loading(pageName, missingPageName) {
+	        dispatchPageEvent(EventManager.EventNames.loading, new PageEventData(pageName));
+	    }
+	    EventManager.Loading = Loading;
+	    function Loaded(pageName, missingPageName) {
+	        dispatchPageEvent(EventManager.EventNames.loaded, new PageEventData(pageName, missingPageName));
+	    }
+	    EventManager.Loaded = Loaded;
+	    function dispatchPageEvent(eventName, pageEventData) {
+	        var pageChangeEvent = new CustomEvent(eventName, pageEventData);
+	        document.dispatchEvent(pageChangeEvent);
+	    }
+	})(EventManager = exports.EventManager || (exports.EventManager = {}));
 
-    var pageNotFoundPromise;
 
-    var pagesToLoad = [];
-    
-    function Get (pageName, handlePageContent) {
-      ensureLoaded(pageName).then(handlePageContent);
-    }
+/***/ },
+/* 2 */
+/***/ function(module, exports) {
 
-    function EagerLoad (_pagesToLoad) {
-      pagesToLoad = _pagesToLoad || [];
-      eagerLoadNextPage();
-    }
+	"use strict";
+	var Result = (function () {
+	    function Result(page, code) {
+	        this.page = page;
+	        this.code = code;
+	    }
+	    return Result;
+	}());
+	;
+	var Cache;
+	(function (Cache) {
+	    var cache = {};
+	    var config;
+	    var pageNotFoundPromise;
+	    var pagesToLoad = [];
+	    function EagerLoad(_pagesToLoad) {
+	        pagesToLoad = _pagesToLoad || [];
+	        eagerLoadNextPage();
+	    }
+	    Cache.EagerLoad = EagerLoad;
+	    function Get(pageName, handlePageContent) {
+	        ensureLoaded(pageName).then(handlePageContent);
+	    }
+	    Cache.Get = Get;
+	    function Init(_config) {
+	        config = _config;
+	    }
+	    Cache.Init = Init;
+	    function getPageNotFoundResult() {
+	        if (!pageNotFoundPromise) {
+	            pageNotFoundPromise = $.get(expandedContentPath(config.notFoundPageName)).then(function (page) {
+	                return new Result(page, 404);
+	            }, function () {
+	                // Can't show the 404 page, show something mildly helpful
+	                var error = config.serverErrorElement;
+	                return new Result(error, 500);
+	            });
+	        }
+	        return pageNotFoundPromise;
+	    }
+	    function expandedContentPath(pageName) {
+	        return config.contentPath + config.pathSeparator + pageName + config.fileExtension;
+	    }
+	    function eagerLoadNextPage() {
+	        var page = pagesToLoad.pop();
+	        if (page) {
+	            ensureLoaded(page).then(eagerLoadNextPage);
+	        }
+	    }
+	    function ensureLoaded(pageName) {
+	        if (!(pageName in cache)) {
+	            cache[pageName] = new CacheEntry(pageName);
+	        }
+	        return cache[pageName];
+	    }
+	    var CacheEntry = (function () {
+	        function CacheEntry(pageName) {
+	            this.promise = $.get(expandedContentPath(pageName)).then(function (page) {
+	                return new Result(page, 200);
+	            }, function () {
+	                return getPageNotFoundResult();
+	            });
+	        }
+	        CacheEntry.prototype.then = function (handlePageContent) {
+	            this.promise.always(handlePageContent);
+	        };
+	        return CacheEntry;
+	    }());
+	})(Cache = exports.Cache || (exports.Cache = {}));
 
-    function getPageNotFoundResult () {
-      if(!pageNotFoundPromise) {
-        pageNotFoundPromise = $.get(expandedContentPath(config.notFoundPageName)).then(
-          function (page) {
-            return new Result(page, 404);
-          }, function () {
-            // Can't show the 404 page, show something mildly helpful
-            var error = config.serverErrorElement;
-            return new Result(error, 500);
-          }
-        );
-      }
 
-      return pageNotFoundPromise;
-    }
-
-    function eagerLoadNextPage () {
-      page = pagesToLoad.pop();
-      if(page) {
-        ensureLoaded(page).then(eagerLoadNextPage);
-      }
-    }
-
-    function ensureLoaded (pageName) {
-      if(!(pageName in cache)) {
-        cache[pageName] = new CacheEntry(pageName);
-      }
-
-      return cache[pageName];
-    }
-
-    var Result = function (page, statusCode) {
-      this.page = page;
-      this.code = statusCode;
-    };
-
-    var CacheEntry = function (pageName) {
-      this.promise = $.get(expandedContentPath(pageName)).then(
-        function (page) {
-          return new Result(page, 200);
-        }, function () {
-          return getPageNotFoundResult();
-        }
-      )
-      
-      this.then = function (handlePageContent) {
-        this.promise.always(handlePageContent);
-      }
-    }
-
-    return {
-      EagerLoad: EagerLoad,
-      Get: Get
-    }
-  }());
-
-  /* Private Members */
-  function loadContent(pageName) {
-    EventManager.Loading(pageName);
-    Cache.Get(pageName, function (result) {
-      $(config.destinationSelector).html(result.page);
-      if(result.code == 200) {
-        markPageAsIndexable(true);
-        EventManager.Loaded(pageName);
-      } else {
-        markPageAsIndexable(false);
-        EventManager.Loaded(config.notFoundPageName, pageName);
-      }
-      upgradeLinks(config.destinationSelector);
-    });
-  }
-
-  function markPageAsIndexable(indexable) {
-    if(indexable) {
-      $(constants.metaIndexableSelector).remove();
-    } else {
-      $("head").append(constants.metaIndexableElement);
-    }
-  }
-
-  function expandedContentPath(pageName) {
-    return config.contentPath + config.pathSeparator + pageName + config.fileExtension;
-  }
-  
-  function loadContentFromHash() {
-    var pageName = extractPageNameFromHash() || 'index';
-
-    if(pageName in config.redirects) {
-      window.location.href = constants.urlPrefix + config.redirects[pageName];
-    } else {
-      loadContent(pageName);
-    }
-  }
-
-  function extractPageNameFromHash(hash) {
-    hash = hash || window.location.hash
-    delimiterIndex = hash.lastIndexOf(config.anchorDelimiter);
-    if(delimiterIndex > 0) {
-      return hash.slice(1, delimiterIndex);
-    } else {
-      return hash.slice(1);
-    }
-  }
-
-  function hashPathFromStandardPath(path) {
-    if(path == "/") {
-      return constants.urlPrefix;
-    } else if(path.match(/\/[^\/-][^\/]*/)) {
-      return constants.urlPrefix + path.match(/\/([^\/-][^\/]*)$/)[1];
-    } else {
-      return false;
-    }
-  }
-  
-  return {
-    Init : Init,
-    PageName : extractPageNameFromHash
-  };
-  
-}() );
+/***/ }
+/******/ ]);

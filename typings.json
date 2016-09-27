@@ -1,0 +1,8 @@
+{
+  "name": "generator-cms-less",
+  "dependencies": {},
+  "globalDependencies": {
+    "jquery": "registry:dt/jquery#1.10.0+20160908203239",
+    "promise": "registry:dt/promise#7.1.1+20160602154553"
+  }
+}
