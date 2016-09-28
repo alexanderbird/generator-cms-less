@@ -44,8 +44,4 @@ module.exports = yeoman.Base.extend({
       this.destinationPath('.htaccess')
     );
   },
-
-  install: function () {
-    this.installDependencies();
-  }
 });
