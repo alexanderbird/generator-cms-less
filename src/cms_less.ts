@@ -1,25 +1,33 @@
 import { EventManager } from "./event_manager"
 import { Cache } from "./cache"
+import { CmsLessConfig } from "./cms_less_config"
+
+interface CmsLessConstants {
+  linkSelector: string,
+  metaIndexableSelector: string,
+  metaIndexableElement: Element|JQuery,
+  preloadedDataName: string,
+  urlPrefix: string
+}
 
 module CmsLess {
-  var config = { 
-    anchorDelimiter: '-', /* ignore hash content to the right of delimiter */ 
-    destinationSelector: '#cms-less-destination', /* id of html element to fill with content */
-    eagerLoadPages: [], /* list of pages to eager load */
+  var config: CmsLessConfig  = { 
+    anchorDelimiter: '-',  
+    destinationSelector: '#cms-less-destination', 
+    eagerLoadPages: [], 
 
-    /* load content from ( contentPath + pathSeparator + pageName + fileExtension ) */
     contentPath: 'cms-less-content',
     pathSeparator: "/",
     fileExtension: ".html",
 
-    indexPageName: "index", /* treat empty page name as indexPageName */
-    notFoundPageName: "404", /* load this page name if the actual page can't be found */
-    redirects: {}, /* if pageName is in redirects, change pageName to redirects[pageName] */
-    serverErrorElement: $("<div class='error'>Sorry, something wen't wrong when trying to load this page</div>") /* if 404 page can't be found */
+    indexPageName: "index", 
+    notFoundPageName: "404", 
+    redirects: {}, 
+    serverErrorElement: "<div class='error'>Sorry, something wen't wrong when trying to load this page</div>" 
   }
 
   /* Not user-configurable */
-  var constants = {
+  var constants: CmsLessConstants = {
     linkSelector: "a.cms-less-link",
     metaIndexableSelector: "head meta[name='robots']",
     metaIndexableElement: $("<meta name='robots' content='noindex' />"),
@@ -27,12 +35,12 @@ module CmsLess {
     urlPrefix: "/-#"
   }
   
-  export function Init(options) {
+  export function Init(options: CmsLessConfig): void {
     config = $.extend(config, options);
     Cache.Init(config);
 
     // if the path is the PHP back-end path, upgrade it to the corresponding hash path
-    var hashPath = hashPathFromStandardPath(window.location.pathname);
+    var hashPath: string|false = hashPathFromStandardPath(window.location.pathname);
     if(hashPath !== false) {
       window.history.replaceState(hashPath, document.title, hashPath);
     }
@@ -51,7 +59,7 @@ module CmsLess {
     $(window).on('hashchange', loadContentFromHash);
 
     // scroll to the top when a page is loaded
-    $(document).on(EventManager.EventNames.loading, function (e) {
+    $(document).on(EventManager.EventNames.loading, function() {
       document.body.scrollTop = document.documentElement.scrollTop = 0;
     });
     
@@ -60,10 +68,10 @@ module CmsLess {
     Cache.EagerLoad(config.eagerLoadPages);
   }
 
-  export function PageName(hash?: string) {
+  export function PageName(hash?: string): string {
     hash = hash || window.location.hash
-    var pageName;
-    var delimiterIndex = hash.lastIndexOf(config.anchorDelimiter);
+    var pageName: string;
+    var delimiterIndex: number = hash.lastIndexOf(config.anchorDelimiter);
     if(delimiterIndex > 0) {
       pageName = hash.slice(1, delimiterIndex);
     } else {
@@ -73,8 +81,8 @@ module CmsLess {
     return pageName || config.indexPageName;
   }
 
-  function upgradeLinks(domFragmentSelector?: string) {
-    var links;
+  function upgradeLinks(domFragmentSelector?: string): void {
+    var links: JQuery;
     if(domFragmentSelector) {
       links = $(domFragmentSelector).find(constants.linkSelector);
     } else {
@@ -82,19 +90,19 @@ module CmsLess {
     }
     // upgrade all standard (PHP back-end) links to the corresponding hash path
     links.each(function() {
-      var link = $(this);
-      var pageName = link.attr("href");
-      var hashPath = hashPathFromStandardPath(pageName);
+      var link: JQuery = $(this);
+      var pageName: string = link.attr("href");
+      var hashPath: string|false = hashPathFromStandardPath(pageName);
       if(hashPath !== false) {
         link.attr("href", hashPath);
       }
     });
   }
 
-  function loadContent(pageName) {
+  function loadContent(pageName: string): void {
     EventManager.Loading(pageName);
-    Cache.Get(pageName, function (result) {
-      $(config.destinationSelector).html(result.page);
+    Cache.Get(pageName).then(function (result: Cache.Result) {
+      $(config.destinationSelector).html(result.html);
       if(result.code == 200) {
         markPageAsIndexable(true);
         EventManager.Loaded(pageName);
@@ -106,7 +114,7 @@ module CmsLess {
     });
   }
 
-  function markPageAsIndexable(indexable) {
+  function markPageAsIndexable(indexable: boolean): void {
     if(indexable) {
       $(constants.metaIndexableSelector).remove();
     } else {
@@ -114,8 +122,8 @@ module CmsLess {
     }
   }
 
-  function loadContentFromHash() {
-    var pageName = PageName();
+  function loadContentFromHash(): void {
+    var pageName: string = PageName();
 
     if(pageName in config.redirects) {
       window.location.href = constants.urlPrefix + config.redirects[pageName];
@@ -124,7 +132,7 @@ module CmsLess {
     }
   }
 
-  function hashPathFromStandardPath(path) {
+  function hashPathFromStandardPath(path: string): string|false {
     if(path == "/") {
       return constants.urlPrefix;
     } else if(path.match(/\/[^\/-][^\/]*/)) {

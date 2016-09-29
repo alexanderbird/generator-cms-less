@@ -40,28 +40,7 @@ _the Content Management System that gets out of your way_
     </script>
    
 
-The configuration parameter accepts an object with the following options (documented here using [TypeScript](https://www.typescriptlang.org/)'s [Interface declaration syntax](https://basarat.gitbooks.io/typescript/content/docs/types/interfaces.html))
-
-
-    interface CmsLessConfiguration {
-      // Directory containing the page content html files
-      contentPath?: string; // default: 'cms-less-content'
-      
-      // CSS selector for the element that will have its content will be set by CmsLess
-      destinationSelector?: string; // default: '#cms-less-destination'
-      
-      // Delimiter between page name and anchor tag. See Anchors details below
-      anchorDelimiter?: string; // default: '-'
-      
-      // Page to be loaded if a page is not found.
-      notFoundPageName?: string; // default: '404'
-      
-      // Object with "from" page names as keys, and "to" page names as values. See Page Redirection details below
-      redirects?: {[from:string]: string}; // default: {}
-    	
-    	// Pages are loaded immediately and cached in memory. See Eager Loading details below
-    	eagerLoadPages?: string[]; // default: []
-    }
+Refer to the CmsLessConfig interface defined in `[cms_less_config.d.ts](src/cms_less_config.d.ts)` for a list of accepted configuration options. Note that this file follows the [TypeScript](https://www.typescriptlang.org/) [interface declaration syntax](https://basarat.gitbooks.io/typescript/content/docs/types/interfaces.html).
 
 ### Feature Details
 #### Anchors
@@ -126,7 +105,8 @@ As seen here:
     $(document).on('cms-less:page-loaded', function(e) {
         console.log("Finished loading " + e.originalEvent.detail.pageName);
     });
-    
+
+You can access custom event details through `e.originalEvent.detail`. The properties of this object are defined in the EventManager.PageEventDetail, which is found in `[event_manager.ts](src/event_manager.ts)`
 
 ### Read More about the Ajax Website Approach
 * [Someone's helpful blog post](https://blog.andyet.com/2015/05/18/lazymorphic-apps-bringing-back-static-web/) describing an AJAX approach to simple websites, with lots of discussion about pros, cons, and alternatives

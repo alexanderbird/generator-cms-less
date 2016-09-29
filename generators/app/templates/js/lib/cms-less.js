@@ -54,14 +54,13 @@ var CmsLess =
 	        anchorDelimiter: '-',
 	        destinationSelector: '#cms-less-destination',
 	        eagerLoadPages: [],
-	        /* load content from ( contentPath + pathSeparator + pageName + fileExtension ) */
 	        contentPath: 'cms-less-content',
 	        pathSeparator: "/",
 	        fileExtension: ".html",
 	        indexPageName: "index",
 	        notFoundPageName: "404",
 	        redirects: {},
-	        serverErrorElement: $("<div class='error'>Sorry, something wen't wrong when trying to load this page</div>") /* if 404 page can't be found */
+	        serverErrorElement: "<div class='error'>Sorry, something wen't wrong when trying to load this page</div>"
 	    };
 	    /* Not user-configurable */
 	    var constants = {
@@ -92,7 +91,7 @@ var CmsLess =
 	        // load content when the hash changes
 	        $(window).on('hashchange', loadContentFromHash);
 	        // scroll to the top when a page is loaded
-	        $(document).on(event_manager_1.EventManager.EventNames.loading, function (e) {
+	        $(document).on(event_manager_1.EventManager.EventNames.loading, function () {
 	            document.body.scrollTop = document.documentElement.scrollTop = 0;
 	        });
 	        upgradeLinks();
@@ -132,8 +131,8 @@ var CmsLess =
 	    }
 	    function loadContent(pageName) {
 	        event_manager_1.EventManager.Loading(pageName);
-	        cache_1.Cache.Get(pageName, function (result) {
-	            $(config.destinationSelector).html(result.page);
+	        cache_1.Cache.Get(pageName).then(function (result) {
+	            $(config.destinationSelector).html(result.html);
 	            if (result.code == 200) {
 	                markPageAsIndexable(true);
 	                event_manager_1.EventManager.Loaded(pageName);
@@ -182,20 +181,29 @@ var CmsLess =
 /***/ function(module, exports) {
 
 	"use strict";
-	var PageEventData = (function () {
-	    function PageEventData(pageName, missingPageName) {
-	        this.detail = {
-	            pageName: pageName,
-	            missingPageName: missingPageName
-	        };
-	    }
-	    return PageEventData;
-	}());
 	var EventManager;
 	(function (EventManager) {
+	    var PageEvent = CustomEvent;
+	    var PageEventData = (function () {
+	        function PageEventData(pageName, missingPageName) {
+	            this.detail = {
+	                pageName: pageName,
+	                missingPageName: missingPageName,
+	                fullPageName: function () {
+	                    if (missingPageName) {
+	                        return missingPageName + " (" + pageName + ")";
+	                    }
+	                    else {
+	                        return pageName;
+	                    }
+	                }
+	            };
+	        }
+	        return PageEventData;
+	    }());
 	    EventManager.EventNames = {
-	        loading: "cms-less:page-loading",
-	        loaded: "cms-less:page-loaded"
+	        loading: eventNameGenerator("page-loading"),
+	        loaded: eventNameGenerator("page-loaded")
 	    };
 	    function Loading(pageName, missingPageName) {
 	        dispatchPageEvent(EventManager.EventNames.loading, new PageEventData(pageName));
@@ -206,8 +214,11 @@ var CmsLess =
 	    }
 	    EventManager.Loaded = Loaded;
 	    function dispatchPageEvent(eventName, pageEventData) {
-	        var pageChangeEvent = new CustomEvent(eventName, pageEventData);
+	        var pageChangeEvent = new PageEvent(eventName, pageEventData);
 	        document.dispatchEvent(pageChangeEvent);
+	    }
+	    function eventNameGenerator(name) {
+	        return "cms-less:" + name;
 	    }
 	})(EventManager = exports.EventManager || (exports.EventManager = {}));
 
@@ -217,16 +228,30 @@ var CmsLess =
 /***/ function(module, exports) {
 
 	"use strict";
-	var Result = (function () {
-	    function Result(page, code) {
-	        this.page = page;
-	        this.code = code;
-	    }
-	    return Result;
-	}());
-	;
 	var Cache;
 	(function (Cache) {
+	    var Result = (function () {
+	        function Result(html, code) {
+	            this.html = html;
+	            this.code = code;
+	        }
+	        return Result;
+	    }());
+	    Cache.Result = Result;
+	    var CacheEntry = (function () {
+	        function CacheEntry(pageName) {
+	            this.promise = $.get(expandedContentPath(pageName)).then(function (html) {
+	                return new Result(html, 200);
+	            }, function () {
+	                return getPageNotFoundResult();
+	            });
+	        }
+	        CacheEntry.prototype.then = function (handlePageContent) {
+	            this.promise.always(handlePageContent);
+	        };
+	        return CacheEntry;
+	    }());
+	    Cache.CacheEntry = CacheEntry;
 	    var cache = {};
 	    var config;
 	    var pageNotFoundPromise;
@@ -236,8 +261,11 @@ var CmsLess =
 	        eagerLoadNextPage();
 	    }
 	    Cache.EagerLoad = EagerLoad;
-	    function Get(pageName, handlePageContent) {
-	        ensureLoaded(pageName).then(handlePageContent);
+	    function Get(pageName) {
+	        if (!(pageName in cache)) {
+	            cache[pageName] = new CacheEntry(pageName);
+	        }
+	        return cache[pageName];
 	    }
 	    Cache.Get = Get;
 	    function Init(_config) {
@@ -246,8 +274,8 @@ var CmsLess =
 	    Cache.Init = Init;
 	    function getPageNotFoundResult() {
 	        if (!pageNotFoundPromise) {
-	            pageNotFoundPromise = $.get(expandedContentPath(config.notFoundPageName)).then(function (page) {
-	                return new Result(page, 404);
+	            pageNotFoundPromise = $.get(expandedContentPath(config.notFoundPageName)).then(function (html) {
+	                return new Result(html, 404);
 	            }, function () {
 	                // Can't show the 404 page, show something mildly helpful
 	                var error = config.serverErrorElement;
@@ -262,28 +290,9 @@ var CmsLess =
 	    function eagerLoadNextPage() {
 	        var page = pagesToLoad.pop();
 	        if (page) {
-	            ensureLoaded(page).then(eagerLoadNextPage);
+	            Get(page).then(eagerLoadNextPage);
 	        }
 	    }
-	    function ensureLoaded(pageName) {
-	        if (!(pageName in cache)) {
-	            cache[pageName] = new CacheEntry(pageName);
-	        }
-	        return cache[pageName];
-	    }
-	    var CacheEntry = (function () {
-	        function CacheEntry(pageName) {
-	            this.promise = $.get(expandedContentPath(pageName)).then(function (page) {
-	                return new Result(page, 200);
-	            }, function () {
-	                return getPageNotFoundResult();
-	            });
-	        }
-	        CacheEntry.prototype.then = function (handlePageContent) {
-	            this.promise.always(handlePageContent);
-	        };
-	        return CacheEntry;
-	    }());
 	})(Cache = exports.Cache || (exports.Cache = {}));
 
 

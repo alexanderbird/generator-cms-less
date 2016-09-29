@@ -1,38 +1,66 @@
-class Result {
-  constructor(
-    public page,
-    public code
-  ) {}
-};
+import { CmsLessConfig } from "./cms_less_config"
+
+interface CacheStorage {
+  [pageName:string]: Cache.CacheEntry 
+}
 
 export module Cache {
-  var cache = {};
+  export class Result {
+    constructor(
+      public html: string,
+      public code: number
+    ) {}
+  }
 
-  var config;
+  export class CacheEntry {
+    promise: JQueryPromise<Result>;
 
-  var pageNotFoundPromise;
+    constructor(pageName: string) {
+      this.promise = $.get(expandedContentPath(pageName)).then(
+        function (html) {
+          return new Result(html, 200);
+        }, function () {
+          return getPageNotFoundResult();
+        }
+      )
+    }
 
-  var pagesToLoad = [];
+    public then(handlePageContent: (result: Result) => void) { 
+      this.promise.always(handlePageContent);
+    } 
+  }
+
+  var cache: CacheStorage = {};
+
+  var config: CmsLessConfig;
+
+  var pageNotFoundPromise: JQueryPromise<Result>;
+
+  var pagesToLoad: string[] = [];
   
-  export function EagerLoad (_pagesToLoad) {
+  export function EagerLoad(_pagesToLoad: string[]): void {
     pagesToLoad = _pagesToLoad || [];
     eagerLoadNextPage();
   }
 
-  export function Get (pageName, handlePageContent) {
-    ensureLoaded(pageName).then(handlePageContent);
+  export function Get(pageName: string): CacheEntry {
+    if(!(pageName in cache)) {
+      cache[pageName] = new CacheEntry(pageName);
+    }
+
+    return cache[pageName];
   }
 
-  export function Init (_config) {
+  export function Init (_config: CmsLessConfig): void {
     config = _config;
   }
 
-  function getPageNotFoundResult () {
+  function getPageNotFoundResult (): JQueryPromise<Result> {
     if(!pageNotFoundPromise) {
       pageNotFoundPromise = $.get(expandedContentPath(config.notFoundPageName)).then(
-        function (page) {
-          return new Result(page, 404);
-        }, function () {
+        function (html): Cache.Result {
+          return new Result(html, 404);
+        }, function (): Cache.Result {
           // Can't show the 404 page, show something mildly helpful
           var error = config.serverErrorElement;
           return new Result(error, 500);
@@ -43,40 +71,14 @@ export module Cache {
     return pageNotFoundPromise;
   }
 
-  function expandedContentPath(pageName) {
+  function expandedContentPath(pageName: string): string {
     return config.contentPath + config.pathSeparator + pageName + config.fileExtension;
   }
   
-  function eagerLoadNextPage () {
+  function eagerLoadNextPage (): void {
     var page = pagesToLoad.pop();
     if(page) {
-      ensureLoaded(page).then(eagerLoadNextPage);
+      Get(page).then(eagerLoadNextPage);
     }
-  }
-
-  function ensureLoaded (pageName) {
-    if(!(pageName in cache)) {
-      cache[pageName] = new CacheEntry(pageName);
-    }
-
-    return cache[pageName];
-  }
-
-  class CacheEntry {
-    promise: Promise;
-
-    constructor(pageName) {
-      this.promise = $.get(expandedContentPath(pageName)).then(
-        function (page) {
-          return new Result(page, 200);
-        }, function () {
-          return getPageNotFoundResult();
-        }
-      )
-    }
-
-    public then(handlePageContent) { 
-      this.promise.always(handlePageContent);
-    } 
   }
 }

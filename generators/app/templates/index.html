@@ -29,11 +29,11 @@
 	 <script type="text/javascript">
 		 $(function() {
 			 $(document).on('cms-less:page-loading', function(e) {
-				 console.log("Demo event listener: Starting to load " + e.originalEvent.detail.pageName);
+				 console.log("Demo event listener: Starting to load " + e.originalEvent.detail.fullPageName());
 			 });
 				
 			 $(document).on('cms-less:page-loaded', function(e) {
-				console.log("Demo event listener: Finished loading " + e.originalEvent.detail.pageName);
+				console.log("Demo event listener: Finished loading " + e.originalEvent.detail.fullPageName());
 			 });
 
 			 CmsLess.Init({
