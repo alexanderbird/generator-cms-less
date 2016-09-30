@@ -1,35 +1,53 @@
 # CmsLess
 _the Content Management System that gets out of your way_
 
-**What**
+## What
 
 * ultra-lightweight 
 * for small static websites
 * if JavaScript is enabled, it dynamically loads page content
-* if JavaScript isn't enabled, it falls back to a PHP back-end
+* otherwise falls back to a PHP back-end
+* built to run on a standard LAMP stack without dependencies
 
-**Why**
+## Why
 
-* keep your static site [dry](http://programmer.97things.oreilly.com/wiki/index.php/Don't_Repeat_Yourself)
-* WordPress is overkill for a static website
+* It works better than WordPress for static sites:
+	* **Version Control:** it's version controllable, unlike WordPress  (unless you do [what the jQuery team does](https://contribute.jquery.org/web-sites/))
+	* **Dev:** You like your text editor better than the WordPress editor window
+	* **Dev:** Wordpress doesn't have a good workflow for local development
+	* **Prod:** Databases are slower than serving static files
+	* Etc.
+* [Don't repeat yourself](http://programmer.97things.oreilly.com/wiki/index.php/Don't_Repeat_Yourself): CmsLess is a simplistic templating engine that allows you to reuse your common page content
+* Performance: allows you to eager-load key pages on your site before the reader browses to them
 
-### Requires
-* Production:
-	* JQuery 2.X 
-	* PHP 
-	* Apache with mod_rewrite enabled
-* Development:
-	* Node.js to run code generator 
-	* Apache with mod_rewrite enabled 
-		* OR browser with CORS enabled
+## Quick Start
 
-## Get Started
-    
+On your local machine, run the [Yeoman](http://yeoman.io/) generator to set up the skeleton of your site (or to add CmsLess to your existing site). 
+
     npm install -g yo generator-cms-less
     mkdir your_great_website && cd your_great_website
     yo cms-less 
     
-**Stop. This is all you need to know - you now have a template website ready to customize**
+Then customize your site and copy the files to your server. **That's it.**
+
+### Requires
+* Production:
+	* PHP 
+	* Apache with mod_rewrite enabled
+	* JQuery 2.X (generated index.html includes jQuery via a CDN)
+* Development:
+	* Node.js to run code generator 
+	* Apache with mod_rewrite enabled 
+		* OR browser with CORS enabled, such as Firefox, if you're willing to fiddle a bit
+
+### Architecture in a nutshell
+
+* [`.htaccess`](generators/app/templates/.htaccess) decides whether to use PHP- or JavaScript-based CmsLess
+* [`CmsLess.php`](generators/app/templates/cms-less-content/CmsLess.php) PHP-based CmsLess
+	* injects content from the [`cms-less-content`](generators/app/templates/cms-less-content) folder into [`index.html`](generators/app/templates/index.html) and serves that combined file
+* [`cms-less.min.js`](generators/app/templates/js/lib/cms-less.min.js) JavaScript-based CmsLess
+	* upgrades links (to tell .htaccess js is enabled)
+	* loads content from the [`cms-less-content`](generators/app/templates/cms-less-content) folder
 
 ## Optional Configuration
 
