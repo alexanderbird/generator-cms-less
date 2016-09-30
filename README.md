@@ -111,3 +111,8 @@ You can access custom event details through `e.originalEvent.detail`. The proper
 ### Read More about the Ajax Website Approach
 * [Someone's helpful blog post](https://blog.andyet.com/2015/05/18/lazymorphic-apps-bringing-back-static-web/) describing an AJAX approach to simple websites, with lots of discussion about pros, cons, and alternatives
     
+
+## Contributing
+
+1. During development: `npm run watch` will output the build JavaScript to [src/build](src/build). This is version controlled so you can easily see how changes in the TypeScript have affected the built JavaScript... because who wants to diff a minified js file? 
+2. Before commiting: `npm run build` to produce the minified version ready for distribution

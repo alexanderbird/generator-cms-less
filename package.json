@@ -1,7 +1,7 @@
 {
   "name": "generator-cms-less",
-  "version": "0.0.1",
-  "description": "The Content Management System that gets out of your way",
+  "version": "0.1.0",
+  "description": "The Ajax Content Management System that gets out of your way",
   "homepage": "github.com/alexanderbird/generator-cms-less",
   "author": {
     "name": "Alexander Bird",
@@ -36,9 +36,12 @@
   },
   "repository": "alexanderbird/generator-cms-less",
   "scripts": {
-    "prepublish": "typings install",
-    "build": "webpack",
-    "watch": "webpack --watch"
+    "prepublish": [
+      "typings install",
+      "webpack --optimize-minimize"
+    ],
+    "build": "webpack --optimize-minimize",
+    "watch": "webpack --watch --output-filename=src/build/cms-less.js"
   },
   "license": "MIT"
 }

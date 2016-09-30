@@ -1,7 +1,7 @@
 module.exports = {
   entry: './src/cms_less.ts',
   output: {
-    filename: './generators/app/templates/js/lib/cms-less.js',
+    filename: './generators/app/templates/js/lib/cms-less.min.js',
     libraryTarget: 'var',
     library: 'CmsLess'
   },
