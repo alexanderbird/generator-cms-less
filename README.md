@@ -1,5 +1,5 @@
 # CmsLess
-_the Content Management System that gets out of your way_
+_The Ajax Content Management System that gets out of your way_
 
 ## What
 
@@ -58,7 +58,7 @@ Then customize your site and copy the files to your server. **That's it.**
     </script>
    
 
-Refer to the CmsLessConfig interface defined in `[cms_less_config.d.ts](src/cms_less_config.d.ts)` for a list of accepted configuration options. Note that this file follows the [TypeScript](https://www.typescriptlang.org/) [interface declaration syntax](https://basarat.gitbooks.io/typescript/content/docs/types/interfaces.html).
+Refer to the CmsLessConfig interface defined in [cms_less_config.d.ts](src/cms_less_config.d.ts) for a list of accepted configuration options. Note that this file follows the [TypeScript](https://www.typescriptlang.org/) [interface declaration syntax](https://basarat.gitbooks.io/typescript/content/docs/types/interfaces.html).
 
 ### Feature Details
 #### Anchors
@@ -124,7 +124,7 @@ As seen here:
         console.log("Finished loading " + e.originalEvent.detail.pageName);
     });
 
-You can access custom event details through `e.originalEvent.detail`. The properties of this object are defined in the EventManager.PageEventDetail, which is found in `[event_manager.ts](src/event_manager.ts)`
+You can access custom event details through `e.originalEvent.detail`. The properties of this object are defined in the EventManager.PageEventDetail, which is found in [event_manager.ts](src/event_manager.ts)
 
 ### Read More about the Ajax Website Approach
 * [Someone's helpful blog post](https://blog.andyet.com/2015/05/18/lazymorphic-apps-bringing-back-static-web/) describing an AJAX approach to simple websites, with lots of discussion about pros, cons, and alternatives
