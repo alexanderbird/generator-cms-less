@@ -5,20 +5,33 @@ _The Ajax Content Management System that gets out of your way_
 
 * ultra-lightweight 
 * for small static websites
-* if JavaScript is enabled, it dynamically loads page content
-* otherwise falls back to a PHP back-end
-* built to run on a standard LAMP stack without dependencies
+* runs on standard LAMP stack without dependencies
+
+| Ajax Mode | PHP Mode |
+|-----------|----------|
+| ✓ dynamically loads page content | ✓ dynamically generates pages
+| ✓ uses url hash to support bookmarking pages | ✓ uses pretty urls with mod_rewrite
+| ✓ gracefully downgrades to PHP Mode | ✓ gracefully upgrades to Ajax Mode
+| ✓ offers page eager-loading to reduce percieved load times
+| ✓ only load the parts of the page that change
 
 ## Why
 
-* It works better than WordPress for static sites:
-	* **Version Control:** it's version controllable, unlike WordPress  (unless you do [what the jQuery team does](https://contribute.jquery.org/web-sites/))
+For smallish static sites:
+
+* CmsLess is better than a database-based CMS like [**WordPress**](https://wordpress.com/):
+	* **Version Control:** it's version controllable (unless you do [what the jQuery team does](https://contribute.jquery.org/web-sites/))
 	* **Dev:** You like your text editor better than the WordPress editor window
 	* **Dev:** Wordpress doesn't have a good workflow for local development
 	* **Prod:** Databases are slower than serving static files
 	* Etc.
-* [Don't repeat yourself](http://programmer.97things.oreilly.com/wiki/index.php/Don't_Repeat_Yourself): CmsLess is a simplistic templating engine that allows you to reuse your common page content
-* Performance: allows you to eager-load key pages on your site before the reader browses to them
+* CmsLess is better than **pure html** - allows reuse of header, nav, etc. so you [don't repeat yourself](http://programmer.97things.oreilly.com/wiki/index.php/Don't_Repeat_Yourself).
+* CmsLess might not be better than a website generator like [**Jeckyll**](https://jekyllrb.com/) - **but**:
+	* Jeckyll does not provide the performance boost of eager-loading pages or only reloading the content that changes. 
+
+### I want to read a lot about this domain:
+You're looking for Henrik Joreteg's [article about all the great ways to build static websites](https://blog.andyet.com/2015/05/18/lazymorphic-apps-bringing-back-static-web/).
+
 
 ## Quick Start
 
@@ -125,9 +138,6 @@ As seen here:
     });
 
 You can access custom event details through `e.originalEvent.detail`. The properties of this object are defined in the EventManager.PageEventDetail, which is found in [event_manager.ts](src/event_manager.ts)
-
-### Read More about the Ajax Website Approach
-* [Someone's helpful blog post](https://blog.andyet.com/2015/05/18/lazymorphic-apps-bringing-back-static-web/) describing an AJAX approach to simple websites, with lots of discussion about pros, cons, and alternatives
     
 
 ## Contributing
