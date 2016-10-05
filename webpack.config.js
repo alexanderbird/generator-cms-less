@@ -1,7 +1,20 @@
+var ts_config = {
+  prod: { },
+  dev: {
+    declaration: true,
+    declarationDir: "/types/"
+  }
+}
+
+var env = process.argv.indexOf("--development") >= 0 ? "dev" : "prod"
+
+
 module.exports = {
-  entry: './src/cms_less.ts',
+  context: __dirname + "/src",
+  entry: './cms_less.ts',
   output: {
-    filename: './generators/app/templates/js/lib/cms-less.min.js',
+    path: './generators/app/templates/js/lib/',
+    filename: 'cms-less.min.js',
     libraryTarget: 'var',
     library: 'CmsLess'
   },
@@ -14,5 +27,8 @@ module.exports = {
       // all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
       { test: /\.tsx?$/, loader: 'ts-loader' }
     ]
+  },
+  ts: {
+    compilerOptions: ts_config[env]
   }
-} 
+}

@@ -1,4 +1,4 @@
-interface EventName extends String {
+export interface EventName extends String {
   _eventNameBrand: string; // so that EventName is not the same type as String  
 }
 
@@ -22,7 +22,7 @@ export module EventManager {
 
   var PageEvent: IPageEvent = CustomEvent as IPageEvent;
 
-  class PageEventData {
+  export class PageEventData {
     detail: PageEventDetail;
 
     constructor(pageName: string, missingPageName?: string) {
