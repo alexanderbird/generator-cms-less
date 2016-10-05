@@ -22,8 +22,14 @@ export type eventCallback = (payload?: any) => void;
 export type wildcardEventCallback = (eventName: string, payload?: any) => void; 
 
 export interface WildEmittable {
-  on(event: any, groupName: string, fn: eventCallback|wildcardEventCallback);
-  on(event: any, fn: eventCallback|wildcardEventCallback);
+  isWildEmitter: true;
+  on(event: string, groupName: string, fn: eventCallback|wildcardEventCallback);
+  on(event: string, fn: eventCallback|wildcardEventCallback);
+  once(event: string, groupName: string, fn: eventCallback|wildcardEventCallback);
+  once(event: string, fn: eventCallback|wildcardEventCallback);
+  releaseGroup(groupName: string);
+  off(event: string, fn?: Function);
+  emit(event: string, ...payload: any[]);
 }
 
 export class WildEmitter {

@@ -1,6 +1,6 @@
-import { EventManager } from "./event_manager"
 import { Cache } from "./cache"
 import { CmsLessConfig } from "./cms_less_config"
+import { EventManager } from "./event_manager"
 
 interface CmsLessConstants {
   linkSelector: string,
@@ -33,10 +33,13 @@ export module CmsLessCore {
     preloadedDataName: "cms-less-preloaded",
     urlPrefix: "/-#"
   }
+
+  var eventDispatcher: EventManager.Dispatcher;
   
   export function Init(options: CmsLessConfig): void {
+    eventDispatcher = new EventManager.Dispatcher(this);
     config = $.extend(config, options);
-    Cache.Init(config);
+    Cache.Init(config, eventDispatcher);
 
     // if the path is the PHP back-end path, upgrade it to the corresponding hash path
     var hashPath: string|false = hashPathFromStandardPath(window.location.pathname);
@@ -47,7 +50,7 @@ export module CmsLessCore {
     // if the site is accessed from a non-upgraded path, the content will be preloaded - respond accordingly
     var preloadedPageName = $(config.destinationSelector).data(constants.preloadedDataName);
     if(preloadedPageName) {
-      EventManager.Loaded(preloadedPageName);
+      eventDispatcher.page.loaded(preloadedPageName);
       preloadedPageName = preloadedPageName == config.indexPageName ? '' : preloadedPageName;
       window.location.hash = "#" + preloadedPageName;
     } else {
@@ -58,7 +61,7 @@ export module CmsLessCore {
     $(window).on('hashchange', loadContentFromHash);
 
     // scroll to the top when a page is loaded
-    $(document).on(EventManager.EventNames.loading, function() {
+    this.on(eventDispatcher.page.loading.eventName, function() {
       document.body.scrollTop = document.documentElement.scrollTop = 0;
     });
     
@@ -99,15 +102,15 @@ export module CmsLessCore {
   }
 
   function loadContent(pageName: string): void {
-    EventManager.Loading(pageName);
+    eventDispatcher.page.loading(pageName);
     Cache.Get(pageName).then(function (result: Cache.Result) {
       $(config.destinationSelector).html(result.html);
       if(result.code == 200) {
         markPageAsIndexable(true);
-        EventManager.Loaded(pageName);
+        eventDispatcher.page.loaded(pageName);
       } else {
         markPageAsIndexable(false);
-        EventManager.Loaded(config.notFoundPageName, pageName);
+        eventDispatcher.page.loaded(pageName, config.notFoundPageName);
       }
       upgradeLinks(config.destinationSelector);
     });

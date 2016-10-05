@@ -1,25 +1,29 @@
-export interface EventName extends String {
-    _eventNameBrand: string;
-}
+import { WildEmittable } from "./wildemitter";
 export declare module EventManager {
-    interface IEventNames {
-        loading: EventName;
-        loaded: EventName;
+    class PageData {
+        name: string;
+        nameOf404Page: string;
+        fullName: string;
+        constructor(name: string, nameOf404Page?: string);
     }
-    interface IPageEvent extends CustomEvent {
-        readonly detail: PageEventData;
-        new (typeArg: string, eventInitDict?: PageEventData): CustomEvent;
+    interface EventList {
+        [eventName: string]: Dispatchable;
     }
-    interface PageEventDetail {
-        pageName: string;
-        missingPageName: string;
-        fullPageName(): string;
+    interface PageEvents {
+        loading: any;
+        loaded: any;
     }
-    class PageEventData {
-        detail: PageEventDetail;
-        constructor(pageName: string, missingPageName?: string);
+    interface CacheEvents {
+        hit: any;
+        miss: any;
     }
-    var EventNames: IEventNames;
-    function Loading(pageName: string, missingPageName?: string): void;
-    function Loaded(pageName: string, missingPageName?: string): void;
+    class Dispatcher {
+        emitter: WildEmittable;
+        page: EventList & PageEvents;
+        cache: EventList & CacheEvents;
+        constructor(emitter: WildEmittable);
+    }
+    type Dispatchable = ({
+        eventName: string;
+    }) & ((pageName: string, missingPageName?: string) => void);
 }

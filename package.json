@@ -27,7 +27,6 @@
     "gulp-typescript": "^3.0.1",
     "gulp-uglify": "^2.0.0",
     "merge2": "^1.0.2",
-    "raw-loader": "^0.5.1",
     "ts-loader": "^0.8.2",
     "typescript": "^2.1.0-dev.20160926",
     "typings": "^1.4.0",

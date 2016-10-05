@@ -46,58 +46,145 @@ var CmsLess =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var cms_less_core_1 = __webpack_require__(4);
-	var wildemitter_1 = __webpack_require__(3);
+	var cms_less_core_1 = __webpack_require__(1);
+	var wildemitter_1 = __webpack_require__(4);
 	var CmsLess = wildemitter_1.WildEmitter.mixin(cms_less_core_1.CmsLessCore);
 	module.exports = CmsLess;
 
 
 /***/ },
 /* 1 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var EventManager;
-	(function (EventManager) {
-	    var PageEvent = CustomEvent;
-	    var PageEventData = (function () {
-	        function PageEventData(pageName, missingPageName) {
-	            this.detail = {
-	                pageName: pageName,
-	                missingPageName: missingPageName,
-	                fullPageName: function () {
-	                    if (missingPageName) {
-	                        return missingPageName + " (" + pageName + ")";
-	                    }
-	                    else {
-	                        return pageName;
-	                    }
-	                }
-	            };
-	        }
-	        return PageEventData;
-	    }());
-	    EventManager.PageEventData = PageEventData;
-	    EventManager.EventNames = {
-	        loading: eventNameGenerator("page-loading"),
-	        loaded: eventNameGenerator("page-loaded")
+	var cache_1 = __webpack_require__(2);
+	var event_manager_1 = __webpack_require__(3);
+	var CmsLessCore;
+	(function (CmsLessCore) {
+	    var config = {
+	        anchorDelimiter: '-',
+	        destinationSelector: '#cms-less-destination',
+	        eagerLoadPages: [],
+	        contentPath: 'cms-less-content',
+	        pathSeparator: "/",
+	        fileExtension: ".html",
+	        indexPageName: "index",
+	        notFoundPageName: "404",
+	        redirects: {},
+	        serverErrorElement: "<div class='error'>Sorry, something went wrong when trying to load this page</div>"
 	    };
-	    function Loading(pageName, missingPageName) {
-	        dispatchPageEvent(EventManager.EventNames.loading, new PageEventData(pageName));
+	    var constants = {
+	        linkSelector: "a.cms-less-link",
+	        metaIndexableSelector: "head meta[name='robots']",
+	        metaIndexableElement: $("<meta name='robots' content='noindex' />"),
+	        preloadedDataName: "cms-less-preloaded",
+	        urlPrefix: "/-#"
+	    };
+	    var eventDispatcher;
+	    function Init(options) {
+	        eventDispatcher = new event_manager_1.EventManager.Dispatcher(this);
+	        config = $.extend(config, options);
+	        cache_1.Cache.Init(config, eventDispatcher);
+	        // if the path is the PHP back-end path, upgrade it to the corresponding hash path
+	        var hashPath = hashPathFromStandardPath(window.location.pathname);
+	        if (hashPath !== false) {
+	            window.history.replaceState(hashPath, document.title, hashPath);
+	        }
+	        // if the site is accessed from a non-upgraded path, the content will be preloaded - respond accordingly
+	        var preloadedPageName = $(config.destinationSelector).data(constants.preloadedDataName);
+	        if (preloadedPageName) {
+	            eventDispatcher.page.loaded(preloadedPageName);
+	            preloadedPageName = preloadedPageName == config.indexPageName ? '' : preloadedPageName;
+	            window.location.hash = "#" + preloadedPageName;
+	        }
+	        else {
+	            loadContentFromHash();
+	        }
+	        // load content when the hash changes
+	        $(window).on('hashchange', loadContentFromHash);
+	        // scroll to the top when a page is loaded
+	        this.on(eventDispatcher.page.loading.eventName, function () {
+	            document.body.scrollTop = document.documentElement.scrollTop = 0;
+	        });
+	        upgradeLinks();
+	        cache_1.Cache.EagerLoad(config.eagerLoadPages);
 	    }
-	    EventManager.Loading = Loading;
-	    function Loaded(pageName, missingPageName) {
-	        dispatchPageEvent(EventManager.EventNames.loaded, new PageEventData(pageName, missingPageName));
+	    CmsLessCore.Init = Init;
+	    function PageName(hash) {
+	        hash = hash || window.location.hash;
+	        var pageName;
+	        var delimiterIndex = hash.lastIndexOf(config.anchorDelimiter);
+	        if (delimiterIndex > 0) {
+	            pageName = hash.slice(1, delimiterIndex);
+	        }
+	        else {
+	            pageName = hash.slice(1);
+	        }
+	        return pageName || config.indexPageName;
 	    }
-	    EventManager.Loaded = Loaded;
-	    function dispatchPageEvent(eventName, pageEventData) {
-	        var pageChangeEvent = new PageEvent(eventName, pageEventData);
-	        document.dispatchEvent(pageChangeEvent);
+	    CmsLessCore.PageName = PageName;
+	    function upgradeLinks(domFragmentSelector) {
+	        var links;
+	        if (domFragmentSelector) {
+	            links = $(domFragmentSelector).find(constants.linkSelector);
+	        }
+	        else {
+	            links = $(constants.linkSelector);
+	        }
+	        // upgrade all standard (PHP back-end) links to the corresponding hash path
+	        links.each(function () {
+	            var link = $(this);
+	            var pageName = link.attr("href");
+	            var hashPath = hashPathFromStandardPath(pageName);
+	            if (hashPath !== false) {
+	                link.attr("href", hashPath);
+	            }
+	        });
 	    }
-	    function eventNameGenerator(name) {
-	        return "cms-less:" + name;
+	    function loadContent(pageName) {
+	        eventDispatcher.page.loading(pageName);
+	        cache_1.Cache.Get(pageName).then(function (result) {
+	            $(config.destinationSelector).html(result.html);
+	            if (result.code == 200) {
+	                markPageAsIndexable(true);
+	                eventDispatcher.page.loaded(pageName);
+	            }
+	            else {
+	                markPageAsIndexable(false);
+	                eventDispatcher.page.loaded(pageName, config.notFoundPageName);
+	            }
+	            upgradeLinks(config.destinationSelector);
+	        });
 	    }
-	})(EventManager = exports.EventManager || (exports.EventManager = {}));
+	    function markPageAsIndexable(indexable) {
+	        if (indexable) {
+	            $(constants.metaIndexableSelector).remove();
+	        }
+	        else {
+	            $("head").append(constants.metaIndexableElement);
+	        }
+	    }
+	    function loadContentFromHash() {
+	        var pageName = PageName();
+	        if (pageName in config.redirects) {
+	            window.location.href = constants.urlPrefix + config.redirects[pageName];
+	        }
+	        else {
+	            loadContent(pageName);
+	        }
+	    }
+	    function hashPathFromStandardPath(path) {
+	        if (path == "/") {
+	            return constants.urlPrefix;
+	        }
+	        else if (path.match(/\/[^\/-][^\/]*/)) {
+	            return constants.urlPrefix + path.match(/\/([^\/-][^\/]*)$/)[1];
+	        }
+	        else {
+	            return false;
+	        }
+	    }
+	})(CmsLessCore = exports.CmsLessCore || (exports.CmsLessCore = {}));
 
 
 /***/ },
@@ -131,6 +218,7 @@ var CmsLess =
 	    Cache.CacheEntry = CacheEntry;
 	    var cache = {};
 	    var config;
+	    var eventDispatcher;
 	    var pageNotFoundPromise;
 	    var pagesToLoad = [];
 	    function EagerLoad(_pagesToLoad) {
@@ -140,13 +228,18 @@ var CmsLess =
 	    Cache.EagerLoad = EagerLoad;
 	    function Get(pageName) {
 	        if (!(pageName in cache)) {
+	            eventDispatcher.cache.miss(pageName);
 	            cache[pageName] = new CacheEntry(pageName);
+	        }
+	        else {
+	            eventDispatcher.cache.hit(pageName);
 	        }
 	        return cache[pageName];
 	    }
 	    Cache.Get = Get;
-	    function Init(_config) {
+	    function Init(_config, _eventDispatcher) {
 	        config = _config;
+	        eventDispatcher = _eventDispatcher;
 	    }
 	    Cache.Init = Init;
 	    function getPageNotFoundResult() {
@@ -175,6 +268,52 @@ var CmsLess =
 
 /***/ },
 /* 3 */
+/***/ function(module, exports) {
+
+	"use strict";
+	var EventManager;
+	(function (EventManager) {
+	    var PageData = (function () {
+	        function PageData(name, nameOf404Page) {
+	            this.name = name;
+	            this.nameOf404Page = nameOf404Page;
+	            if (this.nameOf404Page) {
+	                this.fullName = this.name + " (" + this.nameOf404Page + ")";
+	            }
+	            else {
+	                this.fullName = this.name;
+	            }
+	        }
+	        return PageData;
+	    }());
+	    EventManager.PageData = PageData;
+	    var Dispatcher = (function () {
+	        function Dispatcher(emitter) {
+	            this.emitter = emitter;
+	            this.page = {
+	                loading: dispatchableFactory(this, "page:loading"),
+	                loaded: dispatchableFactory(this, "page:loaded"),
+	            };
+	            this.cache = {
+	                hit: dispatchableFactory(this, "cache:hit"),
+	                miss: dispatchableFactory(this, "cache:miss")
+	            };
+	        }
+	        return Dispatcher;
+	    }());
+	    EventManager.Dispatcher = Dispatcher;
+	    function dispatchableFactory(dispatcher, eventName) {
+	        var dispatchable = function (pageName, missingPageName) {
+	            dispatcher.emitter.emit(eventName, new PageData(pageName, missingPageName));
+	        };
+	        dispatchable.eventName = eventName;
+	        return dispatchable;
+	    }
+	})(EventManager = exports.EventManager || (exports.EventManager = {}));
+
+
+/***/ },
+/* 4 */
 /***/ function(module, exports) {
 
 	/*
@@ -308,139 +447,6 @@ var CmsLess =
 	    };
 	};
 	_WildEmitter.mixin(_WildEmitter);
-
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var event_manager_1 = __webpack_require__(1);
-	var cache_1 = __webpack_require__(2);
-	var CmsLessCore;
-	(function (CmsLessCore) {
-	    var config = {
-	        anchorDelimiter: '-',
-	        destinationSelector: '#cms-less-destination',
-	        eagerLoadPages: [],
-	        contentPath: 'cms-less-content',
-	        pathSeparator: "/",
-	        fileExtension: ".html",
-	        indexPageName: "index",
-	        notFoundPageName: "404",
-	        redirects: {},
-	        serverErrorElement: "<div class='error'>Sorry, something went wrong when trying to load this page</div>"
-	    };
-	    var constants = {
-	        linkSelector: "a.cms-less-link",
-	        metaIndexableSelector: "head meta[name='robots']",
-	        metaIndexableElement: $("<meta name='robots' content='noindex' />"),
-	        preloadedDataName: "cms-less-preloaded",
-	        urlPrefix: "/-#"
-	    };
-	    function Init(options) {
-	        config = $.extend(config, options);
-	        cache_1.Cache.Init(config);
-	        // if the path is the PHP back-end path, upgrade it to the corresponding hash path
-	        var hashPath = hashPathFromStandardPath(window.location.pathname);
-	        if (hashPath !== false) {
-	            window.history.replaceState(hashPath, document.title, hashPath);
-	        }
-	        // if the site is accessed from a non-upgraded path, the content will be preloaded - respond accordingly
-	        var preloadedPageName = $(config.destinationSelector).data(constants.preloadedDataName);
-	        if (preloadedPageName) {
-	            event_manager_1.EventManager.Loaded(preloadedPageName);
-	            preloadedPageName = preloadedPageName == config.indexPageName ? '' : preloadedPageName;
-	            window.location.hash = "#" + preloadedPageName;
-	        }
-	        else {
-	            loadContentFromHash();
-	        }
-	        // load content when the hash changes
-	        $(window).on('hashchange', loadContentFromHash);
-	        // scroll to the top when a page is loaded
-	        $(document).on(event_manager_1.EventManager.EventNames.loading, function () {
-	            document.body.scrollTop = document.documentElement.scrollTop = 0;
-	        });
-	        upgradeLinks();
-	        cache_1.Cache.EagerLoad(config.eagerLoadPages);
-	    }
-	    CmsLessCore.Init = Init;
-	    function PageName(hash) {
-	        hash = hash || window.location.hash;
-	        var pageName;
-	        var delimiterIndex = hash.lastIndexOf(config.anchorDelimiter);
-	        if (delimiterIndex > 0) {
-	            pageName = hash.slice(1, delimiterIndex);
-	        }
-	        else {
-	            pageName = hash.slice(1);
-	        }
-	        return pageName || config.indexPageName;
-	    }
-	    CmsLessCore.PageName = PageName;
-	    function upgradeLinks(domFragmentSelector) {
-	        var links;
-	        if (domFragmentSelector) {
-	            links = $(domFragmentSelector).find(constants.linkSelector);
-	        }
-	        else {
-	            links = $(constants.linkSelector);
-	        }
-	        // upgrade all standard (PHP back-end) links to the corresponding hash path
-	        links.each(function () {
-	            var link = $(this);
-	            var pageName = link.attr("href");
-	            var hashPath = hashPathFromStandardPath(pageName);
-	            if (hashPath !== false) {
-	                link.attr("href", hashPath);
-	            }
-	        });
-	    }
-	    function loadContent(pageName) {
-	        event_manager_1.EventManager.Loading(pageName);
-	        cache_1.Cache.Get(pageName).then(function (result) {
-	            $(config.destinationSelector).html(result.html);
-	            if (result.code == 200) {
-	                markPageAsIndexable(true);
-	                event_manager_1.EventManager.Loaded(pageName);
-	            }
-	            else {
-	                markPageAsIndexable(false);
-	                event_manager_1.EventManager.Loaded(config.notFoundPageName, pageName);
-	            }
-	            upgradeLinks(config.destinationSelector);
-	        });
-	    }
-	    function markPageAsIndexable(indexable) {
-	        if (indexable) {
-	            $(constants.metaIndexableSelector).remove();
-	        }
-	        else {
-	            $("head").append(constants.metaIndexableElement);
-	        }
-	    }
-	    function loadContentFromHash() {
-	        var pageName = PageName();
-	        if (pageName in config.redirects) {
-	            window.location.href = constants.urlPrefix + config.redirects[pageName];
-	        }
-	        else {
-	            loadContent(pageName);
-	        }
-	    }
-	    function hashPathFromStandardPath(path) {
-	        if (path == "/") {
-	            return constants.urlPrefix;
-	        }
-	        else if (path.match(/\/[^\/-][^\/]*/)) {
-	            return constants.urlPrefix + path.match(/\/([^\/-][^\/]*)$/)[1];
-	        }
-	        else {
-	            return false;
-	        }
-	    }
-	})(CmsLessCore = exports.CmsLessCore || (exports.CmsLessCore = {}));
 
 
 /***/ }

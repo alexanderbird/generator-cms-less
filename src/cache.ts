@@ -1,4 +1,5 @@
 import { CmsLessConfig } from "./cms_less_config"
+import { EventManager } from "./event_manager"
 
 interface CacheStorage {
   [pageName:string]: Cache.CacheEntry 
@@ -34,6 +35,8 @@ export module Cache {
 
   var config: CmsLessConfig;
 
+  var eventDispatcher: EventManager.Dispatcher;
+
   var pageNotFoundPromise: JQueryPromise<Result>;
 
   var pagesToLoad: string[] = [];
@@ -45,14 +48,18 @@ export module Cache {
 
   export function Get(pageName: string): CacheEntry {
     if(!(pageName in cache)) {
+      eventDispatcher.cache.miss(pageName);
       cache[pageName] = new CacheEntry(pageName);
+    } else {
+      eventDispatcher.cache.hit(pageName);
     }
 
     return cache[pageName];
   }
 
-  export function Init (_config: CmsLessConfig): void {
+  export function Init (_config: CmsLessConfig, _eventDispatcher: EventManager.Dispatcher): void {
     config = _config;
+    eventDispatcher = _eventDispatcher;
   }
 
   function getPageNotFoundResult (): JQueryPromise<Result> {

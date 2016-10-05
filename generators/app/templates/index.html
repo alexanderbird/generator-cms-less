@@ -28,12 +28,15 @@
     <script src="/js/lib/cms-less.min.js"></script>
     <script type="text/javascript">
       $(function() {
-        $(document).on('cms-less:page-loading', function(e) {
-          console.log("Demo event listener: Starting to load " + e.originalEvent.detail.fullPageName());
-        });
+        console.log("The following demo log messages are generated from a generic event listener in index.html");
 
-        $(document).on('cms-less:page-loaded', function(e) {
-          console.log("Demo event listener: Finished loading " + e.originalEvent.detail.fullPageName());
+        function Demo(eventName, pageName) {
+          this.eventName = eventName;
+          this.pageName = pageName;
+        }
+
+        CmsLess.on('*', function(eventName, pageData) {
+          console.log(new Demo(eventName, pageData.fullName));
         });
 
         CmsLess.Init({

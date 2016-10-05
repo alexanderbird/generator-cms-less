@@ -1,64 +1,46 @@
-export interface EventName extends String {
-  _eventNameBrand: string; // so that EventName is not the same type as String  
-}
-
+import { WildEmittable } from "./wildemitter"
 export module EventManager {
-  export interface IEventNames {
-    loading: EventName,
-    loaded: EventName
-  }
+  export class PageData {
+    fullName: string;
 
-  export interface IPageEvent extends CustomEvent {
-    readonly detail: PageEventData;
-    new(typeArg: string, eventInitDict?: PageEventData): CustomEvent;
-  }
-
-  export interface PageEventDetail {
-    pageName: string,
-    /* if pageName === '404', then missingPageName contains the name of the missing page */
-    missingPageName: string,
-    fullPageName(): string;
-  }
-
-  var PageEvent: IPageEvent = CustomEvent as IPageEvent;
-
-  export class PageEventData {
-    detail: PageEventDetail;
-
-    constructor(pageName: string, missingPageName?: string) {
-      this.detail = {
-        pageName: pageName,
-        missingPageName: missingPageName,
-        fullPageName: function(): string {
-          if(missingPageName) { 
-            return `${missingPageName} (${pageName})`;
-          } else {
-            return pageName;
-          }
-        }
+    constructor(public name: string, public nameOf404Page?: string) {
+      if(this.nameOf404Page) { 
+        this.fullName = `${this.name} (${this.nameOf404Page})`;
+      } else {
+        this.fullName = this.name;
       }
     }
   }
 
-  export var EventNames: IEventNames = {
-    loading: eventNameGenerator("page-loading"),
-    loaded: eventNameGenerator("page-loaded")
+  export interface EventList {
+    [eventName: string]: Dispatchable;
   }
 
-  export function Loading(pageName: string, missingPageName?: string): void {
-    dispatchPageEvent(EventNames.loading, new PageEventData(pageName));
+  export interface PageEvents { loading, loaded }
+
+  export interface CacheEvents { hit, miss }
+
+  export class Dispatcher {
+    page: EventList & PageEvents= {
+      loading: dispatchableFactory(this, "page:loading"),
+      loaded: dispatchableFactory(this, "page:loaded"),
+    }
+
+    cache: EventList & CacheEvents = {
+      hit: dispatchableFactory(this, "cache:hit"),
+      miss: dispatchableFactory(this, "cache:miss")
+    }
+
+    constructor(public emitter: WildEmittable) { } 
   }
 
-  export function Loaded(pageName:string , missingPageName?: string): void {
-    dispatchPageEvent(EventNames.loaded, new PageEventData(pageName, missingPageName));
-  }
+  export type Dispatchable = ({ eventName: string }) & ((pageName: string, missingPageName?: string) => void);
 
-  function dispatchPageEvent(eventName: EventName, pageEventData: PageEventData): void {
-    var pageChangeEvent = new PageEvent(<string>(eventName as any), pageEventData);
-    document.dispatchEvent(pageChangeEvent);
-  }
-
-  function eventNameGenerator(name: string): EventName {
-    return <EventName>(`cms-less:${name}` as any);
+  function dispatchableFactory(dispatcher: Dispatcher, eventName: string): Dispatchable {
+    var dispatchable:Dispatchable = function(pageName: string, missingPageName?: string) {
+      dispatcher.emitter.emit(eventName, new PageData(pageName, missingPageName));        
+    } as any
+    dispatchable.eventName = eventName;
+    return dispatchable;
   }
 }

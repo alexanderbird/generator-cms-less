@@ -122,22 +122,28 @@ Once a page has been visited once in a session, it is cached in memory for quick
 * if you don't want to use `cms-less-destination`, set a different `destinationSelector` in the Init() configuration - see Configuration notes
 
 ### Events
-CmsLess dispatches events to inform you about page loading: 
+CmsLess dispatches events: 
 
-* `cms-less:page-loading`
-* `cms-less:page-loaded`
+* `page:loading`
+* `page:loaded`
+* `cache:hit`
+* `cache:miss`
 
 As seen here: 
 
-    $(document).on('cms-less:page-loading', function(e) {
-        console.log("Starting to load " + e.originalEvent.detail.pageName);
-    });
-    
-    $(document).on('cms-less:page-loaded', function(e) {
-        console.log("Finished loading " + e.originalEvent.detail.pageName);
+    CmsLess.on('page:loading', function(pageData) {
+        console.log("Starting to load " + pageData.fullName);
     });
 
-You can access custom event details through `e.originalEvent.detail`. The properties of this object are defined in the EventManager.PageEventDetail, which is found in [event_manager.ts](src/event_manager.ts)
+    CmsLess.on('*', function(eventName, pageData) {
+      console.log("The " + eventName + " event was fired for the " + pageData.fullName + " page");
+    });
+
+    CmsLess.on('cache:*', function(eventName) {
+      console.log("The following cache-related event was fired: " + eventName);
+    });
+
+The second argument in the callback is an instance of the [PageData](src/page_data.ts) class. 
     
 
 ## Contributing
