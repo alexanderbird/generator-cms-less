@@ -34,10 +34,13 @@ export module EventManager {
     constructor(public emitter: WildEmittable) { } 
   }
 
-  export type Dispatchable = ({ eventName: string }) & ((pageName: string, missingPageName?: string) => void);
+  export interface Dispatchable {
+    eventName: string;  
+    (pageName: number, missingPageName?: string): void;
+  }
 
   function dispatchableFactory(dispatcher: Dispatcher, eventName: string): Dispatchable {
-    var dispatchable:Dispatchable = function(pageName: string, missingPageName?: string) {
+    var dispatchable: Dispatchable = function(pageName: string, missingPageName?: string) {
       dispatcher.emitter.emit(eventName, new PageData(pageName, missingPageName));        
     } as any
     dispatchable.eventName = eventName;

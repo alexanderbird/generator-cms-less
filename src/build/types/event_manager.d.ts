@@ -23,7 +23,8 @@ export declare module EventManager {
         cache: EventList & CacheEvents;
         constructor(emitter: WildEmittable);
     }
-    type Dispatchable = ({
+    interface Dispatchable {
         eventName: string;
-    }) & ((pageName: string, missingPageName?: string) => void);
+        (pageName: number, missingPageName?: string): void;
+    }
 }
