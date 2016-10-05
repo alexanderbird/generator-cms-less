@@ -143,7 +143,7 @@ As seen here:
       console.log("The following cache-related event was fired: " + eventName);
     });
 
-The second argument in the callback is an instance of the [PageData](src/page_data.ts) class. 
+The second argument in the callback is an instance of the [EventManager.PageData](src/event_manager.ts) class. 
     
 
 ## Contributing
