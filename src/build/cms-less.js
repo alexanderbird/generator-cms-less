@@ -174,14 +174,17 @@ var CmsLess =
 	        }
 	    }
 	    function hashPathFromStandardPath(path) {
-	        if (path == "/") {
+	        if (path == null || path === "/") {
 	            return constants.urlPrefix;
 	        }
-	        else if (path.match(/\/[^\/-][^\/]*/)) {
-	            return constants.urlPrefix + path.match(/\/([^\/-][^\/]*)$/)[1];
-	        }
 	        else {
-	            return false;
+	            var match = path.match(/\/([^\/-][^\/]*)$/);
+	            if (match) {
+	                return constants.urlPrefix + match[1];
+	            }
+	            else {
+	                return false;
+	            }
 	        }
 	    }
 	})(CmsLessCore = exports.CmsLessCore || (exports.CmsLessCore = {}));
