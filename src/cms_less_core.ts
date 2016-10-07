@@ -1,6 +1,7 @@
 import { Cache } from "./cache"
 import { CmsLessConfig } from "./cms_less_config"
 import { EventManager } from "./event_manager"
+import { ICmsLess } from "./i_cms_less"
 
 interface CmsLessConstants {
   linkSelector: string,
@@ -36,7 +37,7 @@ export module CmsLessCore {
 
   var eventDispatcher: EventManager.Dispatcher;
   
-  export function Init(options: CmsLessConfig): void {
+  export function Init(this: ICmsLess, options: CmsLessConfig): void {
     eventDispatcher = new EventManager.Dispatcher(this);
     config = $.extend(config, options);
     Cache.Init(config, eventDispatcher);
@@ -91,7 +92,7 @@ export module CmsLessCore {
       links = $(constants.linkSelector);
     }
     // upgrade all standard (PHP back-end) links to the corresponding hash path
-    links.each(function() {
+    links.each(function(this: Element) {
       var link: JQuery = $(this);
       var pageName: string = link.attr("href");
       var hashPath: string|false = hashPathFromStandardPath(pageName);

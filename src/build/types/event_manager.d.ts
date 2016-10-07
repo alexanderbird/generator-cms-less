@@ -24,7 +24,7 @@ export declare module EventManager {
         constructor(emitter: WildEmittable);
     }
     interface Dispatchable {
-        eventName: string;
         (pageName: number, missingPageName?: string): void;
+        eventName: string;
     }
 }

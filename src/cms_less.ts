@@ -1,8 +1,7 @@
 import { CmsLessCore } from "./cms_less_core"
-import { WildEmitter, WildEmittable } from "./wildemitter"
+import { WildEmitter } from "./wildemitter"
+import { ICmsLess } from "./i_cms_less"
 
-declare type CmsLess = (typeof CmsLessCore) & WildEmittable;
-
-var CmsLess: CmsLess = WildEmitter.mixin(CmsLessCore);
+var CmsLess: ICmsLess = WildEmitter.mixin(CmsLessCore);
 
 export = CmsLess;

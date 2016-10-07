@@ -1,4 +1,9 @@
 {
+  "unusedCompilerOptions": {
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    ".": true
+  },
   "compilerOptions": {
     "strictNullChecks": true,
     "target": "es5",
