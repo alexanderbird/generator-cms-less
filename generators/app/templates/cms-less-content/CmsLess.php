@@ -1,7 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 'On'); // or ini_set('display_errors', 1);
-
 require 'php-lib/autoload.php';
 use Masterminds\HTML5;
 
@@ -46,7 +43,9 @@ foreach($contentsNodes->getElementsByTagName('span') as $span) {
 
 // script tags may appear above the script block - can't have that!
 $scriptTags = [];
-foreach($contentsNodes->getElementsByTagName('script') as $script) {
+$rawScriptTags = $contentsNodes->getElementsByTagName('script');
+for($i = $rawScriptTags->length; --$i >= 0; ) {
+  $script = $rawScriptTags->item($i);
   $scriptTags []= $script->cloneNode(true);
   $script->parentNode->removeChild($script);
 }
@@ -80,7 +79,7 @@ foreach($childNodes as $node) {
 }
 
 // add the script tags
-$body = $completePage->getElementsByTagName("body")[0];
+$body = $completePage->getElementsByTagName("body")->item(0);
 foreach($scriptTags as $script) {
   $script = $completePage->importNode($script, true);
   if($script) {
