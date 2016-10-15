@@ -46,7 +46,7 @@ $scriptTags = [];
 $rawScriptTags = $contentsNodes->getElementsByTagName('script');
 for($i = $rawScriptTags->length; --$i >= 0; ) {
   $script = $rawScriptTags->item($i);
-  $scriptTags []= $script->cloneNode(true);
+  $scriptTags[$i] = $script->cloneNode(true);
   $script->parentNode->removeChild($script);
 }
 
@@ -80,8 +80,9 @@ foreach($childNodes as $node) {
 
 // add the script tags
 $body = $completePage->getElementsByTagName("body")->item(0);
-foreach($scriptTags as $script) {
-  $script = $completePage->importNode($script, true);
+$length = count($scriptTags);
+for($i = 0; $i < $length; $i++) {
+  $script = $completePage->importNode($scriptTags[$i], true);
   if($script) {
     $body->appendChild($script);
   }
