@@ -2,6 +2,9 @@ Options +FollowSymlinks
 
 RewriteEngine On
 
+# CmsLess
+#################
+# ~ Rule: /- paths should not be preprocessed ~
 # If JavaScript is enabled, links are progressively enhanced from /path 
 # to /-#path, which arrives here as /- 
 # Serve up an empty index.html and the JavaScript front end takes
@@ -9,17 +12,24 @@ RewriteEngine On
 RewriteCond %{REQUEST_URI}    ^/-$                                    [NC]
 RewriteRule .*                /index.html?skip_preprocessing=true     [L]
 
-# Any single page names /page /foobar-baz /etc are passed off to the 
-# PHP back-end
+# ~ Rule: assume no page name means 'index' ~
 RewriteCond %{REQUEST_URI}    ^/$                                     [NC]
-RewriteRule .*                /cms-less-content/CmsLess.php?p=index  [L]
+RewriteRule .*                /cms-less-content/CmsLess.php?p=index   [L]
 
-# Respect the skip_preprocessing flag
-RewriteCond %{QUERY_STRING}   ^(?!skip_preprocessing=true)$               [NC]
+# ~ Rule: single page names /page /foobar-baz /etc are passed off to the 
+#   PHP back-end ~
+#   ... if it's not a special page
+RewriteCond %{REQUEST_URI}    !^/sitemap.xml$                         [NC]
+#RewriteCond %{REQUEST_URI}    !^/other-example.txt$                  [NC] 
+
+#   ... if we haven't been told to skip the preprocessing
+RewriteCond %{QUERY_STRING}   ^(?!skip_preprocessing=true)$           [NC]
+
+#   ... then pass it off to the PHP back-end
 RewriteCond %{REQUEST_URI}    ^/([^/]+)$                              [NC]
-RewriteRule .*                /cms-less-content/CmsLess.php?p=%1     [L]
+RewriteRule .*                /cms-less-content/CmsLess.php?p=%1      [L]
 
-# For assets and page content at /path/subdirectory, do nothing
+# ~ Rule: for assets and page content at /path/subdirectory, do nothing ~
 RewriteCond %{REQUEST_URI}    ^/([^/]+)/.*$                           [NC]
 RewriteRule .*                -                                       [L]
 
