@@ -4,7 +4,7 @@ export interface CmsLessConfig {
     eagerLoadPages: string[], /* list of pages to eager load */
 
     /* load content from ( contentPath + pathSeparator + pageName + fileExtension ) */
-    contentPath: string, /* default: 'cms-less-content'; directory name */
+    contentPath: string, /* default: '_partials'; directory name */
     pathSeparator: string, /* default: '/' */
     fileExtension: string, /* default: '.html' */
 

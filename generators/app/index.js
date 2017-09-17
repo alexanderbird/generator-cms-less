@@ -7,13 +7,29 @@ module.exports = yeoman.Base.extend({
       'Welcome to the CmsLess generator!'
     );
 
-    var prompts = [{
-      type: 'input',
-      name: 'siteTitle',
-      message: 'What is the title of your website?',
-      default: 'CmsLess Website',
-      store: true
-    }];
+    var prompts = [
+      {
+        type: 'input',
+        name: 'siteTitle',
+        message: 'What is the title of your website?',
+        default: 'CmsLess Website',
+        store: true
+      },
+      {
+        type: 'input',
+        name: 'aws_region',
+        message: 'Which AWS region will you deploy to?',
+        default: 'us-west-1',
+        store: true
+      },
+      {
+        type: 'input',
+        name: 'domain',
+        message: 'What domain would you like to deploy to?',
+        default: 'example.com',
+        store: true
+      }
+    ];
 
     return this.prompt(prompts).then(function (props) {
       this.props = props;
@@ -21,7 +37,7 @@ module.exports = yeoman.Base.extend({
   },
 
   writing: function () {
-    var foldersToCopy = ['cms-less-content', 'css', 'js'];
+    var foldersToCopy = ['bin', 'src'];
     for(var index in foldersToCopy) { 
       var folder = foldersToCopy[index];
       this.fs.copy(
@@ -31,17 +47,13 @@ module.exports = yeoman.Base.extend({
       );
     }
 
-    this.fs.copyTpl(
-      this.templatePath('index.html'),
-      this.destinationPath('index.html'),
-      {
-        title: this.props.siteTitle
-      }
-    );
 
-    this.fs.copy(
-      this.templatePath('.htaccess'),
-      this.destinationPath('.htaccess')
-    );
+    ['package.json', 's3_bucket_policy.json', 'template.html'].forEach((file) => {
+      this.fs.copyTpl(
+        this.templatePath(file),
+        this.destinationPath(file),
+        this.props
+      );
+    });
   },
 });

@@ -1,0 +1,16 @@
+{
+  "Id": "Policy1380877762691",
+  "Statement": [
+    {
+      "Sid": "AllowPublicRead",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::%%bucket%%/*",
+      "Principal": {
+        "AWS": "*"
+      }
+    }
+  ]
+}

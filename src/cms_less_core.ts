@@ -17,7 +17,7 @@ export module CmsLessCore {
     destinationSelector: '#cms-less-destination', 
     eagerLoadPages: [], 
 
-    contentPath: 'cms-less-content',
+    contentPath: '_partials',
     pathSeparator: "/",
     fileExtension: ".html",
 

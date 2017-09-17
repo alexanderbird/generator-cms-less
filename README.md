@@ -3,15 +3,16 @@ _The Ajax Content Management System that gets out of your way_
 
 ## What
 
+* oneline deploy to Amazon S3
 * ultra-lightweight 
 * for small static websites
 * runs on standard LAMP stack without dependencies
 
-| Ajax Mode | PHP Mode |
-|-----------|----------|
-| ✓ dynamically loads page content | ✓ dynamically generates pages
-| ✓ uses url hash to support bookmarking pages | ✓ uses pretty urls with mod_rewrite
-| ✓ gracefully downgrades to PHP Mode | ✓ gracefully upgrades to Ajax Mode
+| Ajax Mode | no JavaScript mode |
+|-----------|--------------------|
+| ✓ dynamically loads page content | ✓ renders pre-compiled page
+| ✓ gracefully downgrades to no JavaScript mode | ✓ gracefully upgrades to Ajax Mode
+| ✓ uses url hash to support bookmarking pages |
 | ✓ offers page eager-loading to reduce percieved load times
 | ✓ only load the parts of the page that change
 
@@ -20,7 +21,7 @@ _The Ajax Content Management System that gets out of your way_
 For smallish static sites:
 
 * CmsLess is better than a database-based CMS like [**WordPress**](https://wordpress.com/):
-	* **Version Control:** it's version controllable (unless you do [what the jQuery team does](https://contribute.jquery.org/web-sites/))
+	* **Version Control:** it's version controllable, unlike WordPress (unless you do [what the jQuery team does](https://contribute.jquery.org/web-sites/))
 	* **Dev:** You like your text editor better than the WordPress editor window
 	* **Dev:** Wordpress doesn't have a good workflow for local development
 	* **Prod:** Databases are slower than serving static files
@@ -29,8 +30,7 @@ For smallish static sites:
 * CmsLess might not be better than a website generator like [**Jeckyll**](https://jekyllrb.com/) - **but**:
 	* Jeckyll does not provide the performance boost of eager-loading pages or only reloading the content that changes. 
 
-### I want to read a lot about this domain:
-You're looking for Henrik Joreteg's [article about all the great ways to build static websites](https://blog.andyet.com/2015/05/18/lazymorphic-apps-bringing-back-static-web/).
+<sub>You may be interested in Henrik Joreteg's [article about all the great ways to build static websites](https://blog.andyet.com/2015/05/18/lazymorphic-apps-bringing-back-static-web/).</sub>
 
 
 ## Quick Start
@@ -54,13 +54,54 @@ Then customize your site and copy the files to your server. **That's it.**
 		* OR browser with CORS enabled, such as Firefox, if you're willing to fiddle a bit
 
 ### Architecture in a nutshell
+#### Source Layout:
+src/
+  template.html
+  partials/
+    404.html
+    index.html
+    other_page.html
+  assets/
+    js/
+      your_scripts.js
+      lib/
+        cms-less.min.js
+    css/
+      your_styles.css
+    other_directories/
+      whatever.anything
+bin/
+  build.sh
+  deploy.sh
 
-* [`.htaccess`](generators/app/templates/.htaccess) decides whether to use PHP- or JavaScript-based CmsLess
-* [`CmsLess.php`](generators/app/templates/cms-less-content/CmsLess.php) PHP-based CmsLess
-	* injects content from the [`cms-less-content`](generators/app/templates/cms-less-content) folder into [`index.html`](generators/app/templates/index.html) and serves that combined file
-* [`cms-less.min.js`](generators/app/templates/js/lib/cms-less.min.js) JavaScript-based CmsLess
-	* upgrades links (to tell .htaccess js is enabled)
-	* loads content from the [`cms-less-content`](generators/app/templates/cms-less-content) folder
+#### Built Layout
+build/
+ 404
+ index
+ other_page
+ -
+ js/...
+ css/...
+ other_directories/...
+ _partials/
+  _404.html
+  _index.html
+  _other_page.html
+
+#### Workflow
+ - `npm run build` creates the Built Layout from the Source Layout
+ - `npm run deploy` creates or updates an S3 bucket with the contents of build/
+    - (It's up to you to configure DNS, etc. to point to the S3 bucket)
+
+#### Website Usage
+  - non-JavaScript mode:
+    - root path `/` url => `index.html` file (which is template.html + partials/index.html
+    - `/other_page` url => `other_page` file (which is a file without extension that has template.html + partials/other_page.html)
+  - non-JavaScript mode progressively enhanced to JavaScript mode
+    - from any page, the links to `/foo` are changed to `/-#foo` (links to JavaScript mode)
+  - JavaScript mode
+    - `/-` url => `-` file (which is template.html renamed to `-`). CmsLess JavaScript loads `_partials/index.html` content into the template
+    - `/-#other_page` url => `_` file (still template.html). CmsLess JavaScript loads `_partials/_other_page.html` content into the template
 
 ## Optional Configuration
 
@@ -79,14 +120,14 @@ Refer to the CmsLessConfig interface defined in [cms_less_config.d.ts](src/cms_l
 
 Anything after the `anchorDelimiter` (default: `-`) in the url hash is ignored when loading the page content. This way, you can still use the hash for page anchors. The only nuisance is that the anchor must now be `<a href='#pagename-anchorname'>Anchor Name</a>` to link to `<div id='pagename-anchorname'>Anchored Stuff</div>`. 
 
-To reiterate, all of the following will load `cms-less-content/foo.html`:
+To reiterate, all of the following will load `_partials/foo.html`:
 
 * `example.com/#foo`
 * `example.com/#foo-`
 * `example.com/#foo-bar`
 * `example.com/#foo-baz`
 
-You can test this out by spinning up a new CmsLess website and browsing to the index page. From your web browser's JavaScript console, run `CmsLess.PageName('#somepage-totest')` to see what page name CmsLess extracts from the hash. If you don't provide an argument, it will take the hash from the `window.location.hash` property. 
+You can test this out by headed over to the [live demo](cms-less.abird.ca) - from your web browser's JavaScript console, run `CmsLess.PageName('#somepage-totest')` to see what page name CmsLess extracts from the hash. If you don't provide an argument, it will take the hash from the `window.location.hash` property. 
 
 
 #### Page Redirection
@@ -98,15 +139,17 @@ As an example of how you could use it: by setting `redirects` to:
       'common_typo': 'page_you_think_they_meant' 
     }
 
-will redirect `/#common_typo` to `/#page_you_think_they_meant`
+will redirect from the `/common_typo` page to `/page_you_think_they_meant`
 
 #### Eager Loading
 Once a page has been visited once in a session, it is cached in memory for quick access if the website visitor visits another page on the site and then later returns. To take full advantage of this speed-boost, provide a list of page names in the `eagerLoadPages` array and these pages will be pre-loaded into memory before the website visitor requests it. Be careful with this option - it gives you the power to load the entire website for every visitor. Is the percieved performance boost worth it? 
 
+Note that currently this feature only loads the page text, not any embedded or referenced assets - you'll have to rely on your browser to cache those, and you can't eager-load them with CmsLess. I may add a "deep eager load" down the road. 
+
 ## All the Gory Details
     
 ### Links
-**Add the class `cms-less-link` to have standard `/page` links progressively enhanced to the corresponding CmsLess link (`/-#page`)
+Add the class `cms-less-link` to have the `/page` links progressively enhanced to the corresponding CmsLess link (`/-#page`)
 
     <a class="cms-less-link" href="/page">
     	<!-- .cms-less-link tells CmsLess to change this to href="-#page"-->
@@ -119,7 +162,7 @@ Once a page has been visited once in a session, it is cached in memory for quick
     	<span id="cms-less-content-placeholder"><!-- this span is optional. It keeps the footer at least one page height down until the first content is loaded --></span>
     </div>
 
-* if you don't want to use `cms-less-destination`, set a different `destinationSelector` in the Init() configuration - see Configuration notes
+If you don't want to use `cms-less-destination`, configure a different `destinationSelector` (see notes about Configuration).
 
 ### Events
 CmsLess dispatches events: 
