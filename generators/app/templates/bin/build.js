@@ -57,6 +57,8 @@ TaskRunner.AddStep('LOAD TEMPLATE', (yes, no, maybe) => {
   fs.readFile(templatePath, function (err, data) {
     if(err) {
       no(err);
+    } else if(!data) {
+      no(`Missing template file at ${templatePath}`)
     } else {
       template = cheerio.load(data.toString('utf-8'));
       fs.writeFile(path.join(config.directories.build, '-'), template.html(), maybe);

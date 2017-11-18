@@ -3,14 +3,10 @@
   "Statement": [
     {
       "Sid": "AllowPublicRead",
-      "Action": [
-        "s3:GetObject"
-      ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::%%bucket%%/*",
-      "Principal": {
-        "AWS": "*"
-      }
+      "Principal": "*",
+      "Action": [ "s3:GetObject" ],
+      "Resource": [ "arn:aws:s3:::<%= domain %>/*" ]
     }
   ]
 }

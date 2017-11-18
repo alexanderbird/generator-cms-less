@@ -22,8 +22,10 @@ aws.command(`s3api get-bucket-location --bucket "${config.bucket}"`).then().catc
   return aws.command(`s3api put-bucket-policy --bucket "${config.bucket}" --policy "${policy}" --region ${config.region}`);
 }).then(() => {
   // Set all files without an extension to text/html file type
-  return aws.command(`s3 sync ./build/ "s3://${config.bucket}" --region ${config.region} --content-type text/html --exclude "*.*"`);
+  return aws.command(`s3 sync ./build/ "s3://${config.bucket}" --region ${config.region} --content-type "text/html" --exclude "*.*"`);
 }).then(() => {
   // Sync the rest, deleting any unused files
   return aws.command(`s3 sync ./build/ "s3://${config.bucket}" --region ${config.region} --delete`);
+}).then(() => {
+  console.log(`http://${config.bucket}.s3.amazonaws.com`)
 }).catch(error);

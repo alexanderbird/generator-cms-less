@@ -35,8 +35,8 @@ module.exports = (function() {
         _executeRemainingSteps();
       }).catch((err) => {
         clearTimeout(timeout);
-        log(err);
-        console.log('Aborting');
+        log('Aborted.')
+        log(`\n\n${err}\n\n`);
       });
     }
   }

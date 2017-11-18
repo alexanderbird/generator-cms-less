@@ -9,17 +9,18 @@
   "devDependencies": {
     "aws-cli-js": "^2.0.2",
     "cheerio": "^1.0.0-rc.2",
-    "ncp": "^2.0.0",
     "rmdir": "^1.2.0",
     "stream-to-string": "^1.1.0"
   },
   "scripts": {
-    "build": "node ./bin/build.js",
-    "deploy": "node ./bin/deploy.js"
+    "build":  "node ./bin/build.js   # Generate the static html pages",
+    "deploy": "node ./bin/deploy.js  # Create or update the <%= domain %> S3 bucket"
   },
+  <% if(isPrivate) { %>"private": true,<% } %>
+  <% if(!isPrivate) { %>"license": "<%= license %>",<% } %>
+  <% if(!isPrivate) { %>"repository": "<%= repo %>",<% } %>
   "deploy": {
     "region": "<%= aws_region %>",
     "bucket": "<%= domain %>"
-  },
-  "license": "MIT"
+  }
 }
